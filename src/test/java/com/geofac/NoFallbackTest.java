@@ -8,11 +8,11 @@ import java.math.BigInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for policy enforcement - no fallback methods allowed.
+ * Unit tests for policy enforcement - no alternative methods allowed.
  * 
  * These tests verify that:
  * 1. Only the designated target N is accepted
- * 2. Fallback methods are completely disabled
+ * 2. Alternative factorization methods are completely disabled
  * 3. Policy constants are correctly defined
  */
 @SpringBootTest

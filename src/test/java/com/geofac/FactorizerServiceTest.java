@@ -90,12 +90,12 @@ public class FactorizerServiceTest {
      * Full 127-bit factorization test
      *
      * This test validates the geometric resonance algorithm against the target N.
-     * With the strict policy (no fallback), geometric resonance may not always
+     * With the strict policy (no alternatives), geometric resonance may not always
      * find the factor within reasonable time. This test is kept to verify the
      * algorithm can theoretically succeed, but may be skipped in CI.
      *
      * Expected: p = 10508623501177419659, q = 13086849276577416863
-     * Note: With fallback disabled, this test may throw NoFactorFoundException
+     * Note: With alternatives disabled, this test may throw NoFactorFoundException
      * if geometric resonance doesn't converge in time.
      */
     @Test
@@ -130,11 +130,11 @@ public class FactorizerServiceTest {
 
             System.out.println("\n✓ Test passed: Geometric resonance successfully found factors");
         } catch (NoFactorFoundException e) {
-            // With strict policy (no fallback), geometric resonance may not find the factor
+            // With strict policy (no alternatives), geometric resonance may not find the factor
             long duration = System.currentTimeMillis() - startTime;
             System.out.printf("\nGeometric resonance did not find factor after %.2f seconds\n", duration / 1000.0);
             System.out.println("This is expected behavior with STRICT_GEOMETRIC_ONLY policy");
-            System.out.println("(Previously relied on Pollard Rho fallback)\n");
+            System.out.println("(Previously relied on P-R algorithm)\n");
             
             // Test passes - this is acceptable behavior under strict policy
             assertTrue(Policy.STRICT_GEOMETRIC_ONLY, 

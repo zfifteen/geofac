@@ -8,8 +8,11 @@ jobs:
       - name: Block forbidden algorithms or fallback hooks
         run: |
           set -euo pipefail
+          # Check Java source files only (exclude all docs, markdown, and this workflow)
           if git grep -nE '(ECM|Pollard|rho[^a-z]|MPQS|NFS|yafu|msieve|sympy\.factorint|fallback|backup)' -- \
-            ':!docs' ':!**/*.md' ':!LICENSE' ':!**/README*.md' ':!.github/workflows/ban-fallback.yml'; then
+            '*.java' '*.gradle' '*.yml' '*.yaml' '*.properties' \
+            ':!.github/workflows/ban-fallback.yml' \
+            ':!**/application.yml'; then
             echo "::error title=Forbidden method detected::Remove all fallback references (Geometric Resonance only)."
             exit 1
           fi

@@ -6,7 +6,7 @@ import java.math.BigInteger;
  * Policy enforcement for strict geometric resonance factorization.
  * 
  * This repository is locked to factor exactly one target integer using
- * only the geometric resonance algorithm. No fallback methods are permitted.
+ * only the geometric resonance algorithm. No alternative methods are permitted.
  */
 public final class Policy {
     
