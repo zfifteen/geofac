@@ -2,3 +2,5 @@
 .snapshots/
 *.iml
 *.log*
+.gradle/
+build/

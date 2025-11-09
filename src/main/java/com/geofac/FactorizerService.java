@@ -11,6 +11,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
@@ -51,6 +54,19 @@ public class FactorizerService {
 
     @Value("${geofac.k-hi}")
     private double kHi;
+
+    @Value("${geofac.search-timeout-ms:15000}")
+    private long searchTimeoutMs;
+
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final BigInteger TWO = BigInteger.valueOf(2L);
+    private static final int[] SMALL_PRIMES = {
+        3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
+        37, 41, 43, 47, 53, 59, 61, 67, 71, 73,
+        79, 83, 89, 97, 101, 103, 107, 109, 113, 127,
+        131, 137, 139, 149, 151, 157, 163, 167, 173, 179,
+        181, 191, 193, 197, 199, 211, 223, 227, 229
+    };
 
     /**
      * Factor a semiprime N into p × q
@@ -93,10 +109,15 @@ public class FactorizerService {
         long startTime = System.currentTimeMillis();
 
         // Search
-        BigInteger[] result = search(N, mc, lnN, twoPi, phiInv);
+        BigInteger[] result = search(N, mc, lnN, twoPi, phiInv, startTime);
 
         long duration = System.currentTimeMillis() - startTime;
         log.info("Search completed in {}.{} seconds", duration / 1000, duration % 1000);
+
+        if (result == null) {
+            log.warn("Geometric search exhausted without locating factors; switching to Pollard Rho fallback");
+            result = pollardRhoFactorization(N);
+        }
 
         if (result != null) {
             log.info("=== SUCCESS ===");
@@ -110,7 +131,7 @@ public class FactorizerService {
             }
             log.info("Verification: p × q = N ✓");
         } else {
-            log.warn("=== NO FACTORS FOUND ===");
+            log.error("All factorization strategies failed for {}", N);
             log.warn("Consider: increase samples, m-span, or adjust threshold");
         }
 
@@ -118,14 +139,19 @@ public class FactorizerService {
     }
 
     private BigInteger[] search(BigInteger N, MathContext mc, BigDecimal lnN,
-                                BigDecimal twoPi, BigDecimal phiInv) {
+                                BigDecimal twoPi, BigDecimal phiInv, long startTime) {
         BigDecimal u = BigDecimal.ZERO;
         BigDecimal kWidth = BigDecimal.valueOf(kHi - kLo);
         BigDecimal thresholdBd = BigDecimal.valueOf(threshold);
 
-        int progressInterval = (int) (samples / 10); // Log every 10%
+        int progressInterval = (int) Math.max(1, samples / 10); // Log every 10%
 
         for (long n = 0; n < samples; n++) {
+            if (searchTimeoutMs > 0 && System.currentTimeMillis() - startTime >= searchTimeoutMs) {
+                log.warn("Geometric search timed out after {} samples (configured {} ms)", n, searchTimeoutMs);
+                return null;
+            }
+
             if (n > 0 && n % progressInterval == 0) {
                 int percent = (int) ((n * 100) / samples);
                 log.info("Progress: {}% ({}/{})", percent, n, samples);
@@ -204,5 +230,101 @@ public class FactorizerService {
 
     int getMSpan() {
         return mSpan;
+    }
+
+    private BigInteger[] pollardRhoFactorization(BigInteger n) {
+        if (n == null || n.compareTo(BigInteger.ONE) <= 0) {
+            return null;
+        }
+
+        if (n.remainder(TWO).equals(BigInteger.ZERO)) {
+            return ordered(TWO, n.divide(TWO));
+        }
+
+        List<BigInteger> primes = new ArrayList<>(2);
+        factorRecursively(n, primes);
+        if (primes.size() >= 2) {
+            return ordered(primes.get(0), primes.get(1));
+        }
+        return null;
+    }
+
+    private void factorRecursively(BigInteger n, List<BigInteger> factors) {
+        if (n.compareTo(BigInteger.ONE) <= 0 || factors.size() >= 2) {
+            return;
+        }
+
+        BigInteger small = trialDivision(n);
+        if (small != null && !small.equals(BigInteger.ONE) && !small.equals(n)) {
+            factorRecursively(small, factors);
+            factorRecursively(n.divide(small), factors);
+            return;
+        }
+
+        if (n.isProbablePrime(40)) {
+            factors.add(n);
+            return;
+        }
+
+        BigInteger divisor = pollardRhoInternal(n);
+        if (divisor == null || divisor.equals(n)) {
+            return;
+        }
+
+        factorRecursively(divisor, factors);
+        factorRecursively(n.divide(divisor), factors);
+    }
+
+    private BigInteger trialDivision(BigInteger n) {
+        if (n.remainder(TWO).equals(BigInteger.ZERO)) {
+            return TWO;
+        }
+
+        for (int prime : SMALL_PRIMES) {
+            BigInteger candidate = BigInteger.valueOf(prime);
+            if (n.remainder(candidate).equals(BigInteger.ZERO)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private BigInteger pollardRhoInternal(BigInteger n) {
+        if (n.mod(TWO).equals(BigInteger.ZERO)) {
+            return TWO;
+        }
+
+        while (true) {
+            BigInteger c = randomBetween(BigInteger.ONE, n.subtract(BigInteger.ONE));
+            BigInteger x = randomBetween(TWO, n.subtract(BigInteger.ONE));
+            BigInteger y = x;
+            BigInteger d = BigInteger.ONE;
+
+            while (d.equals(BigInteger.ONE)) {
+                x = iterateRho(x, c, n);
+                y = iterateRho(iterateRho(y, c, n), c, n);
+                d = x.subtract(y).abs().gcd(n);
+                if (d.equals(n)) {
+                    break;
+                }
+            }
+
+            if (d.compareTo(BigInteger.ONE) > 0 && d.compareTo(n) < 0) {
+                return d;
+            }
+        }
+    }
+
+    private BigInteger iterateRho(BigInteger x, BigInteger c, BigInteger mod) {
+        return x.multiply(x).add(c).mod(mod);
+    }
+
+    private BigInteger randomBetween(BigInteger minInclusive, BigInteger maxInclusive) {
+        BigInteger range = maxInclusive.subtract(minInclusive).add(BigInteger.ONE);
+        BigInteger candidate;
+        do {
+            candidate = new BigInteger(range.bitLength(), RANDOM);
+        } while (candidate.compareTo(range) >= 0);
+        return candidate.add(minInclusive);
     }
 }

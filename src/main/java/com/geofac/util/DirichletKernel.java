@@ -62,10 +62,7 @@ public final class DirichletKernel {
     }
 
     private static BigDecimal floor(BigDecimal x, MathContext mc) {
-        if (x.signum() >= 0) {
-            return x.setScale(0, mc.getRoundingMode());
-        } else {
-            return x.setScale(0, mc.getRoundingMode().UP); // toward -∞
-        }
+        // Always round toward negative infinity to maintain periodicity math
+        return x.setScale(0, java.math.RoundingMode.FLOOR);
     }
 }
