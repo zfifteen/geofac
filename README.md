@@ -106,5 +106,16 @@ This repo has a single goal: factor `N` above via geometric resonance only. PRs 
 2. Deterministic progress logs plus lightweight amplitude histograms.
 3. CI artifact bundling with a one-page proof report (`experiments/N-factorization.md`).
 
+### Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[WHITEPAPER.md](docs/WHITEPAPER.md)** — Empirical whitepaper on geometric resonance factorization: method overview, verification, QMC analysis, theoretical context, and acceptance criteria validation
+- **[VERIFICATION.md](docs/VERIFICATION.md)** — Detailed verification appendix: exact N, p, q, artifact locations, reproduction instructions, and configuration parameters
+- **[QMC_METHODS.md](docs/QMC_METHODS.md)** — Quasi-Monte Carlo methods: golden ratio sampling, Sobol sequences, variance reduction theory, and practical comparison
+- **[THEORY.md](docs/THEORY.md)** — Theoretical foundations: complexity theory (Time Hierarchy, Rice's theorem), physical limits (Margolus-Levitin, Bremermann), and decidability constraints
+
+These documents provide verifiable artifacts, reproducibility notes, and links to canonical theoretical sources.
+
 ### Additional Research Directions
 - Explore AMX (Apple Matrix Coprocessor) for potential hardware-accelerated optimizations in computational tasks, as an optional path for performance improvements.
