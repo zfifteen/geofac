@@ -102,7 +102,7 @@ public class FactorizerServiceTest {
         FactorizationResult result = service.factor(N_127_BIT);
         long duration = System.currentTimeMillis() - startTime;
 
-        System.out.printf("\nCompleted in %.2f seconds\n", duration / 1000.0);
+        System.out.printf("\nCompleted in %.2f seconds\n", duration / 300000.0);
 
         // Note: Success via either resonance or fallback is acceptable for this out-of-gate benchmark
         assertTrue(result.success(), "Factorization must succeed (via resonance or fallback) within timeout");
