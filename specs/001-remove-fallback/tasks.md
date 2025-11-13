@@ -28,6 +28,7 @@ This task list is generated from the implementation plan and feature specificati
 
 - [ ] T006 Run all existing and new tests via `./gradlew test` to ensure no regressions were introduced.
 - [ ] T007 Review and format the modified code to ensure it adheres to project style guidelines.
+- [ ] T008 Run existing performance benchmarks and ensure no statistically significant regression has occurred.
 
 ## Dependencies
 
