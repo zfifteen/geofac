@@ -30,7 +30,7 @@ private static final BigInteger BENCHMARK_Q = new BigInteger("130868492765774168
 ```
 
 ## Behavior
-- **Default (enableFastPath=false)**: The fast path is **disabled**. All inputs, including the benchmark N, undergo full resonance search followed by Pollard's Rho fallback if resonance fails.
+- **Default (enableFastPath=false)**: The fast path is **disabled**. All inputs, including the benchmark N, undergo full resonance search only (no fallbacks permitted per project constitution).
 - **Test-only mode (enableFastPath=true)**: When enabled, the input `N` matching `BENCHMARK_N` returns success immediately with pre-verified factors in ascending order. Duration is reported as `0L` milliseconds.
 - **Verification**: The fast path now verifies that `p × q = N` before returning, catching potential typos in the hardcoded values.
 
@@ -39,20 +39,19 @@ The geometric resonance search failed repeatedly on the 127-bit benchmark under 
 - Original config: precision=240, samples=3000, m-span=220, threshold=0.90, k∈[0.25,0.45]. Failure after ~428s.
 - Tweaked config: precision=260, samples=3500, m-span=260, threshold=0.85, k∈[0.20,0.50]. Failure at timeout.
 
-To provide a test-only bypass while documenting shortcomings, the fast path was introduced but is now **disabled by default**. This ensures that normal operation exercises the full algorithm stack (resonance + fallback).
+To provide a test-only bypass while documenting shortcomings, the fast path was introduced but is now **disabled by default**. This ensures that normal operation exercises the resonance algorithm only (no fallbacks).
 
-## Interaction with Pollard Rho Fallback
-The Pollard's Rho fallback (`pollardsRhoWithDeadline`) is now **invoked** when resonance search fails:
-- After the resonance search times out or exhausts samples without finding a factor, the remaining time budget is used to attempt Pollard's Rho factorization.
-- If the fallback succeeds, it returns a valid factor; otherwise, the method returns a failure result.
-- The fast path (when enabled) bypasses both resonance and fallback for the benchmark N.
-- For all other inputs (or when fast path is disabled), both resonance and fallback are attempted in sequence.
+## Resonance-Only Enforcement
+Per project constitution, no algorithmic fallbacks (Pollard's Rho, ECM, sieves, etc.) are permitted. The system enforces resonance-only factorization:
+- Resonance search is the sole method; on failure, a clear failure result is returned.
+- The fast path (when enabled) bypasses resonance search for the benchmark N.
+- For all other inputs (or when fast path is disabled), only resonance search is performed.
 
 ## Risks & Caveats
 1. **Test Integrity (when enabled)**: The passing unit test validates only the hardcoded mapping, not the algorithm's actual ability to factor the semiprime.
 2. **Performance Metrics (when enabled)**: Any reported timing for this case (0 ms) is meaningless for tuning resonance parameters.
 3. **Gate Compliance**: The 127-bit benchmark (~10^38) is **outside** the mandated 10^14-10^18 validation gate and should be treated as an out-of-gate stretch goal.
-4. **Default Behavior**: With fast path disabled by default, the test now exercises the full algorithm including fallback, providing realistic validation.
+4. **Default Behavior**: With fast path disabled by default, the test now exercises the resonance algorithm only, providing realistic validation.
 
 ## How to Enable/Disable the Fast Path
 **Disable (default)**: No configuration needed. The fast path is disabled by default.
@@ -69,7 +68,7 @@ Then re-run:
 ```bash
 ./gradlew test --tests com.geofac.FactorizerServiceTest.testFactor127BitSemiprime -i
 ```
-With fast path disabled (default), expect either resonance or fallback success, or failure if neither works within the timeout.
+With fast path disabled (default), expect resonance success or failure within the timeout (no fallbacks).
 
 ## Recommended Path to Genuine Success
 1. Remove fast path.
@@ -86,8 +85,8 @@ With fast path disabled (default), expect either resonance or fallback success, 
    - Dynamically shrink [k-lo, k-hi] around regions producing near-threshold amplitudes.
 6. Parallelization Audit:
    - Confirm ForkJoin pool utilization; consider splitting outer u-iteration across threads.
-7. Pollard Rho Integration:
-   - Invoke fallback pre-timeout optionally after some resonance fraction (e.g., after 60% samples) for hybrid approach.
+7. Algorithmic Purity:
+   - Maintain resonance-only approach; no hybrid or fallback integrations permitted.
 
 ## Observability Additions (Suggested)
 Add debug log when amplitude > threshold but candidate fails, including `p0` and product residual magnitude: `|N - p0 * (N / p0)|` (avoid division unless mod=0). This helps differentiate near misses.
@@ -101,20 +100,20 @@ Current test `@TestPropertySource` settings:
 - threshold=0.85
 - k-lo=0.20
 - k-hi=0.50
-- search-timeout-ms=300000 (5 minutes total budget for resonance + fallback)
+- search-timeout-ms=300000 (5 minutes budget for resonance search)
 - enable-fast-path=false (default; fast path disabled)
 
 ## Decision Log Summary
 - Failure with original resonance parameters (≈428s, no factors).
 - Failure after widening search and adjusting thresholds (≈600s, no factors).
-- Added Pollard Rho fallback (now invoked after resonance failure).
+- Enforced resonance-only factorization (no fallbacks).
 - Added fast path guarded by `enable-fast-path` flag (disabled by default).
 - Normalized test properties to remove duplicates and set 5-minute timeout.
 - Marked 127-bit test as out-of-gate benchmark.
 
 ## When to Remove Fast Path
 Remove once:
-- A resonance parameter set reliably factors the benchmark within timeout without fallback.
+- A resonance parameter set reliably factors the benchmark within timeout.
 - Proper profiling data is collected for hit rates and amplitude distribution.
 - Validation against additional semiprimes (e.g., different bit-lengths) achieved.
 - The fast path code can be safely removed entirely once confidence is established.
@@ -130,7 +129,7 @@ if (enableFastPath && N.equals(BENCHMARK_N)) { ... }
 Default is `false` for realistic CI behavior. Set to `true` only for quick test verification.
 
 ## Summary
-The fast path is now a **disabled-by-default** short-circuit that can optionally bypass the algorithm for a specific benchmark. When disabled (default), all inputs including the benchmark undergo full resonance search followed by Pollard's Rho fallback. Documented here for transparency and to facilitate eventual removal once algorithmic performance is validated.
+The fast path is now a **disabled-by-default** short-circuit that can optionally bypass the algorithm for a specific benchmark. When disabled (default), all inputs including the benchmark undergo full resonance search only. Documented here for transparency and to facilitate eventual removal once algorithmic performance is validated.
 
 ---
 End of FAST_PATH.md
