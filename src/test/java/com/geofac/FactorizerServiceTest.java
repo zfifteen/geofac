@@ -88,7 +88,7 @@ public class FactorizerServiceTest {
      * This test validates the geometric resonance algorithm against a 127-bit semiprime.
      * Note: This is outside the validated gate range (10^14-10^18) and serves as a
      * stretch goal benchmark. The algorithm attempts resonance search first, then falls
-     * back to Pollard's Rho if resonance fails.
+      * Resonance-only factorization (no fallbacks).
      *
      * Expected: p = 10508623501177419659, q = 13086849276577416863
      */
@@ -96,16 +96,16 @@ public class FactorizerServiceTest {
     void testFactor127BitSemiprime() {
         System.out.println("\n=== Starting 127-bit Factorization Test (OUT-OF-GATE) ===");
         System.out.println("This benchmark is ~10^38, outside the 10^14-10^18 validation gate.");
-        System.out.println("Attempting resonance search, then Pollard's Rho fallback if needed...\n");
+        System.out.println("Attempting resonance search...\n");
 
         long startTime = System.currentTimeMillis();
         FactorizationResult result = service.factor(N_127_BIT);
         long duration = System.currentTimeMillis() - startTime;
 
-        System.out.printf("\nCompleted in %.2f seconds\n", duration / 300000.0);
+        System.out.printf("\nCompleted in %.2f seconds\n", duration / 1000.0);
 
-        // Note: Success via either resonance or fallback is acceptable for this out-of-gate benchmark
-        assertTrue(result.success(), "Factorization must succeed (via resonance or fallback) within timeout");
+        // Note: Resonance success expected for this out-of-gate benchmark
+        assertTrue(result.success(), "Factorization must succeed within timeout");
         
         // Verify result
         BigInteger p = result.p();
@@ -124,6 +124,6 @@ public class FactorizerServiceTest {
         // Verify product
         assertEquals(N_127_BIT, p.multiply(q), "Product of factors should equal N");
 
-        System.out.println("\n✓ Test passed: Factorization successful (via resonance or fallback)");
+        System.out.println("\n✓ Test passed: Factorization successful");
     }
 }
