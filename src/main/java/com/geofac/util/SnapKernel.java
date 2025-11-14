@@ -15,21 +15,25 @@ public final class SnapKernel {
     private SnapKernel() {} // Utility class
 
     /**
-     * Compute candidate factor using geometric snap.
+     * Compute candidate factor using phase-corrected snap.
      *
-     * In geometric factorization, k represents the logarithmic ratio: p ≈ N^k
-     * For a balanced semiprime where p ≈ q ≈ √N, k ≈ 0.5
+     * Fixed double-2π bug: theta is already 2π*m/k from the caller,
+     * so we use it directly without additional 2π multiplication.
+     *
+     * Formula: p̂ = exp((ln(N) - θ)/2)
      *
      * @param lnN ln(N) at given precision
-     * @param theta Angular parameter θ (used for Dirichlet filtering, not directly in snap)
-     * @param k Fractional exponent parameter
+     * @param theta Angular parameter θ (already 2π*m/k from caller)
+     * @param k Fractional exponent parameter (not used in current formula)
      * @param mc MathContext for precision
      * @return Candidate factor p
      */
     public static BigInteger phaseCorrectedSnap(BigDecimal lnN, BigDecimal theta, BigDecimal k, MathContext mc) {
-        // Core formula: p = N^k, which means ln(p) = k * ln(N)
-        BigDecimal lnP = k.multiply(lnN, mc);
-        BigDecimal pHat = BigDecimalMath.exp(lnP, mc);
+        // theta is already the full 2π-phase from the search kernel.
+        // Use it directly to avoid the double-2π bug.
+        // p̂ = exp((ln(N) - θ)/2)
+        BigDecimal expo = lnN.subtract(theta, mc).divide(BigDecimal.valueOf(2), mc);
+        BigDecimal pHat = BigDecimalMath.exp(expo, mc);
 
         // Phase correction: adjust based on residual
         BigDecimal correctedPHat = applyPhaseCorrection(pHat, mc);
