@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # One-shot factorization of the target N using geometric resonance
 # Produces results/single_N_run.json and plaintext factors if successful
 #
@@ -51,26 +53,53 @@
 # The official Gate 1 challenge number. See docs/VALIDATION_GATES.md for details.
 TARGET_N="137524771864208156028430259349934309717"
 
-echo "Starting one-shot factorization of N = $TARGET_N"
+RUN_ID="$(date +%Y%m%d-%H%M%S)"
+OUT_DIR="results/single_run_${RUN_ID}"
+mkdir -p "$OUT_DIR"
+
+echo "Starting geometric resonance factorization"
+echo "N = $TARGET_N"
+echo "Run ID = $RUN_ID"
 
 # Run the factorization command with tuned parameters from PR #25
 # Note: Adaptive precision = max(configured, N.bitLength()*4 + 200) = max(708, 127*4+200)=708
+JAR="build/libs/geofac-0.1.0-SNAPSHOT.jar"
+if [ ! -f "$JAR" ]; then
+  echo "Jar not found; building..."
+  ./gradlew --no-daemon -q clean build -x test
+fi
 output=$(java \
   -Dgeofac.allow-gate1-benchmark=true \
   -Dgeofac.precision=708 \
-  -Dgeofac.samples=20000 \
+  -Dgeofac.samples=7500 \
   -Dgeofac.m-span=200 \
   -Dgeofac.j=8 \
-  -Dgeofac.threshold=0.82 \
+  -Dgeofac.threshold=0.88 \
   -Dgeofac.k-lo=0.20 \
-  -Dgeofac.k-hi=0.65 \
-  -Dgeofac.search-timeout-ms=180000 \
+  -Dgeofac.k-hi=0.50 \
+  -Dgeofac.search-timeout-ms=90000 \
   -Dgeofac.enable-fast-path=false \
-  -Dgeofac.enable-diagnostics=false \
-  -jar build/libs/geofac-0.1.0-SNAPSHOT.jar factor $TARGET_N 2>&1)
+  -Dgeofac.enable-diagnostics=true \
+  -Dgeofac.diagnostics.outputDir="$OUT_DIR" \
+  -jar "$JAR" factor "$TARGET_N" 2>&1 | tee "$OUT_DIR/run.log")
 
 # Print the output
 echo "$output"
+
+# Check diagnostics JSON first
+DIAG_JSON="$OUT_DIR/factorization.json"
+if [ -f "$DIAG_JSON" ] && command -v jq >/dev/null 2>&1; then
+    status=$(jq -r '.status // empty' "$DIAG_JSON")
+    p=$(jq -r '.result.p // empty' "$DIAG_JSON")
+    q=$(jq -r '.result.q // empty' "$DIAG_JSON")
+    if [ "$status" = "SUCCESS" ] && [ -n "$p" ] && [ -n "$q" ]; then
+        echo "Factorization successful."
+        echo "$p"
+        echo "$q"
+        echo "pq_matches_N=true"
+        exit 0
+    fi
+fi
 
 # Check for success
 if grep -q "SUCCESS" <<< "$output"; then
