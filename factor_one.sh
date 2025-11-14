@@ -42,7 +42,11 @@
 #
 # Expected success per PR, but not achieved. Script expects "SUCCESS" in output to extract p,q.
 # For other LLMs: Check FactorizerService.java snap logic, DirichletKernel, or parameter derivation.
-# Possible fixes: Enable fast-path for known factors, or debug p0 calculation in SnapKernel.
+#
+# IMPORTANT: DO NOT enable fast-path (enable-fast-path=true) as a "solution".
+# Fast-path is NOT success—it's a convenience construct that returns known factors
+# to allow the build to pass. Real success means the geometric resonance algorithm
+# discovers the factors without being given them. The algorithm currently fails.
 
 # The official Gate 1 challenge number. See docs/VALIDATION_GATES.md for details.
 TARGET_N="137524771864208156028430259349934309717"
@@ -54,15 +58,15 @@ echo "Starting one-shot factorization of N = $TARGET_N"
 output=$(java \
   -Dgeofac.allow-gate1-benchmark=true \
   -Dgeofac.precision=708 \
-  -Dgeofac.samples=7500 \
+  -Dgeofac.samples=20000 \
   -Dgeofac.m-span=200 \
   -Dgeofac.j=8 \
-  -Dgeofac.threshold=0.88 \
+  -Dgeofac.threshold=0.82 \
   -Dgeofac.k-lo=0.20 \
-  -Dgeofac.k-hi=0.50 \
-  -Dgeofac.search-timeout-ms=30000 \
+  -Dgeofac.k-hi=0.65 \
+  -Dgeofac.search-timeout-ms=180000 \
   -Dgeofac.enable-fast-path=false \
-  -Dgeofac.enable-diagnostics=true \
+  -Dgeofac.enable-diagnostics=false \
   -jar build/libs/geofac-0.1.0-SNAPSHOT.jar factor $TARGET_N 2>&1)
 
 # Print the output
@@ -73,8 +77,8 @@ if grep -q "SUCCESS" <<< "$output"; then
     echo "Factorization successful."
 
     # Extract p and q from the output
-    p=$(grep "p =" <<< "$output" | sed 's/.*p = //' | tr -d ' ')
-    q=$(grep "q =" <<< "$output" | sed 's/.*q = //' | tr -d ' ')
+    p=$(grep "p =" <<< "$output" | sed 's/.*p = //' | sed 's/║.*//' | tr -d ' ')
+    q=$(grep "q =" <<< "$output" | sed 's/.*q = //' | sed 's/║.*//' | tr -d ' ')
 
     # Output plaintext
     echo "$p"
