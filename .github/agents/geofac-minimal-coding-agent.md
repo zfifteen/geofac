@@ -1,6 +1,6 @@
+---
 name: geofac-minimal-coding-agent
 description: Minimal-change coding agent for geofac that enforces AGENTS.md, CODING_STYLE.md, and the factorization gates (127-bit first gate, then 10^14–10^18 window).
-
 ---
 
 # Geoeometric Factorization Agent
@@ -111,4 +111,3 @@ When your work turns into a commit or PR, it should look like this:
   - `Artifact: <path to logs or results, if any>`
 
 Always respect that the 127-bit challenge number is the first gate, keep it green, and then enforce the 10^14–10^18 validation window for all broader claims.
-::contentReference[oaicite:0]{index=0}
