@@ -74,6 +74,29 @@ Record holding benchmark results for a single run.
 - `config` - Full configuration snapshot
 - `errorMessage` - Error details if failed
 
+## Performance Optimizations
+
+The validation framework applies two key optimization principles:
+
+### Parallel Execution (Vectorization)
+
+Benchmark runs are executed in parallel using Java parallel streams. Instead of processing semiprimes and configurations sequentially (O(n×m) serial time), the framework exploits CPU parallelism to process multiple benchmark runs simultaneously. This provides asymptotic improvement similar to vectorized operations, where multiple data elements are processed concurrently via SIMD lanes.
+
+### Memoization (Result Caching)
+
+The framework caches benchmark results based on N and configuration parameters. If the same semiprime with identical configuration is tested multiple times, the cached result is returned instantly rather than recomputing. This applies the ergodic sampling principle: once a computation is performed, reuse it rather than regenerating identical stochastic calculations.
+
+**Cache management:**
+```java
+// Clear cache for fresh sweep session
+benchmark.clearCache();
+
+// Check cache size
+int cached = benchmark.getCacheSize();
+```
+
+These optimizations transform validation sweeps from sequential, repetitive operations into efficient, parallelized computations that avoid redundant work.
+
 ## Exported Artifacts
 
 All artifacts are timestamped and exported to the specified output directory.

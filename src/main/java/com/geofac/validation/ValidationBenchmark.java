@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +46,9 @@ public class ValidationBenchmark {
     private final ObjectMapper objectMapper = new ObjectMapper()
         .enable(SerializationFeature.INDENT_OUTPUT);
     
+    // Cache for reusing computation results (memoization)
+    private final Map<String, BenchmarkResult> resultCache = new ConcurrentHashMap<>();
+    
     /**
      * Represents a parameter configuration for sweeping.
      */
@@ -59,8 +63,27 @@ public class ValidationBenchmark {
     ) {}
     
     /**
+     * Clear the result cache. Use this when starting a new sweep session
+     * to ensure fresh computations rather than cached results.
+     */
+    public void clearCache() {
+        resultCache.clear();
+        log.info("Result cache cleared");
+    }
+    
+    /**
+     * Get current cache size (number of memoized results).
+     */
+    public int getCacheSize() {
+        return resultCache.size();
+    }
+    
+    /**
      * Run a parameter sweep against a list of semiprimes.
-     * Tests each semiprime against each configuration.
+     * Tests each semiprime against each configuration using parallel execution.
+     * 
+     * Applies vectorization principle: exploits parallelism via parallel streams
+     * to process multiple benchmark runs simultaneously instead of sequentially.
      * 
      * @param semiprimes List of known semiprimes to test
      * @param configs List of parameter configurations to test
@@ -77,22 +100,24 @@ public class ValidationBenchmark {
         log.info("Configurations: {}", configs.size());
         log.info("Total runs: {}", semiprimes.size() * configs.size());
         
-        List<BenchmarkResult> results = new ArrayList<>();
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         
-        for (SemiprimeGenerator.Semiprime semiprime : semiprimes) {
-            for (ParamConfig paramConfig : configs) {
-                log.info("Testing N={} ({} bits) with precision={}, samples={}, threshold={}",
-                    semiprime.N(), semiprime.bitLength(), 
-                    paramConfig.precision, paramConfig.samples, paramConfig.threshold);
-                
-                BenchmarkResult result = runSingleBenchmark(semiprime, paramConfig);
-                results.add(result);
-                
-                log.info("Result: success={}, duration={}ms, error={}",
-                    result.success(), result.durationMs(), result.errorMessage());
-            }
-        }
+        // Parallel execution: process benchmark runs in parallel to exploit SIMD-like parallelism
+        List<BenchmarkResult> results = semiprimes.parallelStream()
+            .flatMap(semiprime -> configs.stream()
+                .map(paramConfig -> {
+                    log.info("Testing N={} ({} bits) with precision={}, samples={}, threshold={}",
+                        semiprime.N(), semiprime.bitLength(), 
+                        paramConfig.precision, paramConfig.samples, paramConfig.threshold);
+                    
+                    BenchmarkResult result = runSingleBenchmark(semiprime, paramConfig);
+                    
+                    log.info("Result: success={}, duration={}ms, error={}",
+                        result.success(), result.durationMs(), result.errorMessage());
+                    
+                    return result;
+                }))
+            .collect(Collectors.toList());
         
         // Export artifacts
         try {
@@ -107,6 +132,9 @@ public class ValidationBenchmark {
     
     /**
      * Run a single benchmark with given semiprime and configuration.
+     * 
+     * Applies memoization: cache results based on N and config to avoid
+     * recomputing identical benchmark runs (ergodic sampling principle).
      */
     private BenchmarkResult runSingleBenchmark(
         SemiprimeGenerator.Semiprime semiprime,
@@ -115,6 +143,17 @@ public class ValidationBenchmark {
         BigInteger N = semiprime.N();
         BigInteger expectedP = semiprime.p();
         BigInteger expectedQ = semiprime.q();
+        
+        // Create cache key from N and config parameters
+        String cacheKey = String.format("%s_%d_%d_%d_%d_%.2f_%.2f_%.2f",
+            N, paramConfig.precision, paramConfig.samples, paramConfig.mSpan,
+            paramConfig.J, paramConfig.threshold, paramConfig.kLo, paramConfig.kHi);
+        
+        // Check cache first (memoization: reuse previous computation)
+        if (resultCache.containsKey(cacheKey)) {
+            log.debug("Cache hit for N={}, reusing previous result", N);
+            return resultCache.get(cacheKey);
+        }
         
         // Create a temporary FactorizerService with custom config
         // Note: This requires using Spring's application properties
@@ -131,7 +170,7 @@ public class ValidationBenchmark {
             
             long duration = System.currentTimeMillis() - startTime;
             
-            return new BenchmarkResult(
+            BenchmarkResult result = new BenchmarkResult(
                 N,
                 expectedP,
                 expectedQ,
@@ -142,6 +181,11 @@ public class ValidationBenchmark {
                 factResult.config(),
                 factResult.errorMessage()
             );
+            
+            // Cache result for potential reuse
+            resultCache.put(cacheKey, result);
+            
+            return result;
             
         } catch (Exception e) {
             long duration = System.currentTimeMillis() - startTime;
@@ -158,7 +202,7 @@ public class ValidationBenchmark {
                 15000L // default timeout
             );
             
-            return new BenchmarkResult(
+            BenchmarkResult result = new BenchmarkResult(
                 N,
                 expectedP,
                 expectedQ,
@@ -169,6 +213,11 @@ public class ValidationBenchmark {
                 config,
                 e.getMessage()
             );
+            
+            // Cache even failed results
+            resultCache.put(cacheKey, result);
+            
+            return result;
         }
     }
     
