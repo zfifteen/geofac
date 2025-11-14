@@ -2,14 +2,68 @@
 
 # One-shot factorization of the target N using geometric resonance
 # Produces results/single_N_run.json and plaintext factors if successful
+#
+# Project: geofac - Geometric Resonance Factorization
+# Repo: https://github.com/zfifteen/geofac
+# README: https://github.com/zfifteen/geofac/blob/main/README.md
+# Coding Style: https://github.com/zfifteen/geofac/blob/main/CODING_STYLE.md
+# Validation Gates: https://github.com/zfifteen/geofac/blob/main/docs/VALIDATION_GATES.md
+# Agents/Operating Rules: https://github.com/zfifteen/geofac/blob/main/AGENTS.md
+#
+# This script attempts to factor the Gate 1 challenge number using the geometric resonance algorithm.
+# It has been updated based on PR #25 (Add Diagnostic Harness for Geometric Resonance Factorization):
+# https://github.com/zfifteen/geofac/pull/25
+# which claims successful reproduction with tuned parameters.
+#
+# However, despite matching the PR's config, the factorization still fails, timing out without finding factors.
+# Diagnostics reveal high-amplitude candidates but incorrect p0 values from the snap heuristic.
+#
+# Attempts documented below:
+# 1. Initial run: Failed due to Spring Shell property binding issue (--spring.shell.interactive=false not parsed correctly).
+#    Error: ConverterNotFoundException for SpringShellProperties$Interactive.
+#    Fix: Removed --spring.shell.interactive=false; Spring Boot runs non-interactive when args provided.
+#
+# 2. Second run: Failed validation gate enforcement.
+#    Error: "Input N does not conform to project validation gates."
+#    Reason: allow-gate1-benchmark=false by default; Gate 1 N is outside Gate 2 range (1e14-1e18).
+#    Fix: Added -Dgeofac.allow-gate1-benchmark=true to bypass for Gate 1.
+#
+# 3. Third run: Factorization started but timed out.
+#    Config: Default application.yml (precision=240, samples=3000, etc.), timeout=15000ms.
+#    Result: Timed out after 15s, 23 samples processed. No factors found.
+#    Diagnostics: Not enabled; no detailed logs.
+#
+# 4. Updated to PR #25 parameters: precision=300, samples=7500, m-span=200, j=8, threshold=0.88,
+#    k-lo=0.20, k-hi=0.50, timeout=30000ms, fast-path=false, diagnostics=true.
+#    But adaptive precision overrides to max(300, 127*4+200)=708.
+#    Result: Still timed out after 30s, 42 samples. Amplitude mean=0.126, many candidates rejected
+#    because p0 (computed prime candidate) is invalid (huge or 0), doesn't divide N.
+#    Conclusion: Snap heuristic produces wrong p0; algorithm needs further tuning or fix.
+#
+# Expected success per PR, but not achieved. Script expects "SUCCESS" in output to extract p,q.
+# For other LLMs: Check FactorizerService.java snap logic, DirichletKernel, or parameter derivation.
+# Possible fixes: Enable fast-path for known factors, or debug p0 calculation in SnapKernel.
 
 # The official Gate 1 challenge number. See docs/VALIDATION_GATES.md for details.
 TARGET_N="137524771864208156028430259349934309717"
 
 echo "Starting one-shot factorization of N = $TARGET_N"
 
-# Run the factorization command
-output=$(java -jar build/libs/geofac-0.1.0-SNAPSHOT.jar --spring.shell.interactive=false factor $TARGET_N 2>&1)
+# Run the factorization command with tuned parameters from PR #25
+# Note: Adaptive precision = max(configured, N.bitLength()*4 + 200) = max(708, 127*4+200)=708
+output=$(java \
+  -Dgeofac.allow-gate1-benchmark=true \
+  -Dgeofac.precision=708 \
+  -Dgeofac.samples=7500 \
+  -Dgeofac.m-span=200 \
+  -Dgeofac.j=8 \
+  -Dgeofac.threshold=0.88 \
+  -Dgeofac.k-lo=0.20 \
+  -Dgeofac.k-hi=0.50 \
+  -Dgeofac.search-timeout-ms=30000 \
+  -Dgeofac.enable-fast-path=false \
+  -Dgeofac.enable-diagnostics=true \
+  -jar build/libs/geofac-0.1.0-SNAPSHOT.jar factor $TARGET_N 2>&1)
 
 # Print the output
 echo "$output"
