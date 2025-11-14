@@ -222,6 +222,14 @@ public class FactorizerService {
                 if (amplitude.compareTo(BigDecimal.valueOf(config.threshold())) > 0) {
                     BigInteger p0 = SnapKernel.phaseCorrectedSnap(lnN, theta, mc);
 
+                    // Guard: reject invalid p0 (must be in valid range (1, N))
+                    if (p0.compareTo(BigInteger.ONE) <= 0 || p0.compareTo(N) >= 0) {
+                        if (enableDiagnostics && candidateLogs != null) {
+                            candidateLogs.add(String.format("Rejected: invalid p0=%s (out of bounds)", p0));
+                        }
+                        return; // Skip this candidate
+                    }
+
                     if (enableDiagnostics && candidateLogs != null) {
                         candidateLogs.add(String.format("Candidate: dm=%d, amplitude=%.6f, p0=%s", dm, amplitude.doubleValue(), p0));
                     }

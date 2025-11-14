@@ -18,15 +18,14 @@ public final class SnapKernel {
      * Compute candidate factor using phase-corrected nearest-integer snap.
      *
      * @param lnN ln(N) at given precision
-     * @param theta Angular parameter θ
+     * @param theta Angular parameter θ (already 2π-scaled from caller)
      * @param mc MathContext for precision
      * @return Candidate factor p
      */
     public static BigInteger phaseCorrectedSnap(BigDecimal lnN, BigDecimal theta, MathContext mc) {
-        // p̂ = exp((ln(N) - 2π·θ)/2)
-        BigDecimal twoPi = BigDecimalMath.pi(mc).multiply(BigDecimal.valueOf(2), mc);
-        BigDecimal term = twoPi.multiply(theta, mc);
-        BigDecimal expo = lnN.subtract(term, mc).divide(BigDecimal.valueOf(2), mc);
+        // theta is already 2π*m/k from FactorizerService, so use it directly
+        // to avoid double-2π bug. Formula: p̂ = exp((ln(N) - theta)/2)
+        BigDecimal expo = lnN.subtract(theta, mc).divide(BigDecimal.valueOf(2), mc);
         BigDecimal pHat = BigDecimalMath.exp(expo, mc);
 
         // Phase correction: adjust based on residual
