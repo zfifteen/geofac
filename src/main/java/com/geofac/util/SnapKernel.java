@@ -15,24 +15,30 @@ public final class SnapKernel {
     private SnapKernel() {} // Utility class
 
     /**
-     * Compute candidate factor using phase-corrected nearest-integer snap.
+     * Compute candidate factor using phase-corrected snap.
+     *
+     * Fixed double-2π bug: theta is already 2π*m/k from the caller,
+     * so we use it directly without additional 2π multiplication.
+     *
+     * Formula: p̂ = exp((ln(N) - θ)/2)
      *
      * @param lnN ln(N) at given precision
-     * @param theta Angular parameter θ
+     * @param theta Angular parameter θ (already 2π*m/k from caller)
+     * @param k Fractional exponent parameter (not used in current formula)
      * @param mc MathContext for precision
      * @return Candidate factor p
      */
-    public static BigInteger phaseCorrectedSnap(BigDecimal lnN, BigDecimal theta, MathContext mc) {
-        // p̂ = exp((ln(N) - 2π·θ)/2)
-        BigDecimal twoPi = BigDecimalMath.pi(mc).multiply(BigDecimal.valueOf(2), mc);
-        BigDecimal term = twoPi.multiply(theta, mc);
-        BigDecimal expo = lnN.subtract(term, mc).divide(BigDecimal.valueOf(2), mc);
+    public static BigInteger phaseCorrectedSnap(BigDecimal lnN, BigDecimal theta, BigDecimal k, MathContext mc) {
+        // theta is already the full 2π-phase from the search kernel.
+        // Use it directly to avoid the double-2π bug.
+        // p̂ = exp((ln(N) - θ)/2)
+        BigDecimal expo = lnN.subtract(theta, mc).divide(BigDecimal.valueOf(2), mc);
         BigDecimal pHat = BigDecimalMath.exp(expo, mc);
 
         // Phase correction: adjust based on residual
         BigDecimal correctedPHat = applyPhaseCorrection(pHat, mc);
 
-        // Nearest integer with tolerance: avoid toBigIntegerExact which may throw
+        // Nearest integer with tolerance
         return roundToBigInteger(correctedPHat, mc.getRoundingMode(), mc);
     }
 
