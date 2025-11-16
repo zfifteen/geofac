@@ -1,0 +1,189 @@
+/home/runner/work/geofac/geofac/gists/geometric-resonance-hypothesis/validate_multi_scale.py:116: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  print(f"Timestamp: {datetime.utcnow().isoformat()}Z")
+/home/runner/work/geofac/geofac/gists/geometric-resonance-hypothesis/validate_multi_scale.py:187: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  'timestamp': datetime.utcnow().isoformat() + 'Z',
+================================================================================
+MULTI-SCALE GEOMETRIC RESONANCE HYPOTHESIS VALIDATION
+================================================================================
+Timestamp: 2025-11-16T18:34:19.614019Z
+Precision: 720 decimal places
+
+RESULTS SUMMARY
+================================================================================
+Bits   κ Pass   θ' Pass   Overall   κ Diff          θ' Rel%     
+--------------------------------------------------------------------------------
+9      ✗        ✗         FAIL      2.85e-02        10.84       
+19     ✗        ✗         FAIL      1.04e-03        35.42       
+29     ✗        ✗         FAIL      9.89e-05        20.02       
+39     ✗        ✗         FAIL      1.65e-05        9.57        
+49     ✗        ✗         FAIL      4.84e-07        26.60       
+59     ✗        ✗         FAIL      1.41e-08        30.68       
+127    ✗        ✗         FAIL      5.94e-02        19.85       
+
+Legend: κ = curvature invariant, θ' = geometric resolution
+        κ threshold: < 1e-16, θ' threshold: < 1%
+
+================================================================================
+DETAILED RESULTS BY BIT SIZE
+================================================================================
+
+────────────────────────────────────────────────────────────────────────────────
+BIT SIZE: 9
+────────────────────────────────────────────────────────────────────────────────
+N = 323
+p = 17
+q = 19
+
+Curvature Analysis:
+  κ(p) = 0.782339
+  κ(q) = 0.810857
+  |κ(p) - κ(q)| = 2.851799e-02
+  Hypothesis 1 (< 1e-16): FAIL ✗
+
+Geometric Resolution Analysis:
+  θ'(p, 0.3) = 1.319415
+  θ'(q, 0.3) = 1.479865
+  Relative difference = 10.84%
+  Hypothesis 2 (< 1%): FAIL ✗
+
+Overall: FALSIFIED ✗
+
+────────────────────────────────────────────────────────────────────────────────
+BIT SIZE: 19
+────────────────────────────────────────────────────────────────────────────────
+N = 272483
+p = 521
+q = 523
+
+Curvature Analysis:
+  κ(p) = 1.693766
+  κ(q) = 1.694802
+  |κ(p) - κ(q)| = 1.035070e-03
+  Hypothesis 1 (< 1e-16): FAIL ✗
+
+Geometric Resolution Analysis:
+  θ'(p, 0.3) = 1.615948
+  θ'(q, 0.3) = 1.043538
+  Relative difference = 35.42%
+  Hypothesis 2 (< 1%): FAIL ✗
+
+Overall: FALSIFIED ✗
+
+────────────────────────────────────────────────────────────────────────────────
+BIT SIZE: 29
+────────────────────────────────────────────────────────────────────────────────
+N = 269419387
+p = 16411
+q = 16417
+
+Curvature Analysis:
+  κ(p) = 2.627066
+  κ(q) = 2.627165
+  |κ(p) - κ(q)| = 9.893533e-05
+  Hypothesis 1 (< 1e-16): FAIL ✗
+
+Geometric Resolution Analysis:
+  θ'(p, 0.3) = 1.356628
+  θ'(q, 0.3) = 1.085089
+  Relative difference = 20.02%
+  Hypothesis 2 (< 1%): FAIL ✗
+
+Overall: FALSIFIED ✗
+
+────────────────────────────────────────────────────────────────────────────────
+BIT SIZE: 39
+────────────────────────────────────────────────────────────────────────────────
+N = 274916705369
+p = 524309
+q = 524341
+
+Curvature Analysis:
+  κ(p) = 3.564688
+  κ(q) = 3.564704
+  |κ(p) - κ(q)| = 1.651922e-05
+  Hypothesis 1 (< 1e-16): FAIL ✗
+
+Geometric Resolution Analysis:
+  θ'(p, 0.3) = 1.503318
+  θ'(q, 0.3) = 1.359481
+  Relative difference = 9.57%
+  Hypothesis 2 (< 1%): FAIL ✗
+
+Overall: FALSIFIED ✗
+
+────────────────────────────────────────────────────────────────────────────────
+BIT SIZE: 49
+────────────────────────────────────────────────────────────────────────────────
+N = 281476922870851
+p = 16777259
+q = 16777289
+
+Curvature Analysis:
+  κ(p) = 4.502750
+  κ(q) = 4.502750
+  |κ(p) - κ(q)| = 4.839950e-07
+  Hypothesis 1 (< 1e-16): FAIL ✗
+
+Geometric Resolution Analysis:
+  θ'(p, 0.3) = 1.127587
+  θ'(q, 0.3) = 1.536168
+  Relative difference = 26.60%
+  Hypothesis 2 (< 1%): FAIL ✗
+
+Overall: FALSIFIED ✗
+
+────────────────────────────────────────────────────────────────────────────────
+BIT SIZE: 59
+────────────────────────────────────────────────────────────────────────────────
+N = 288230402995257773
+p = 536870923
+q = 536870951
+
+Curvature Analysis:
+  κ(p) = 5.440822
+  κ(q) = 5.440822
+  |κ(p) - κ(q)| = 1.411657e-08
+  Hypothesis 1 (< 1e-16): FAIL ✗
+
+Geometric Resolution Analysis:
+  θ'(p, 0.3) = 1.610973
+  θ'(q, 0.3) = 1.116663
+  Relative difference = 30.68%
+  Hypothesis 2 (< 1%): FAIL ✗
+
+Overall: FALSIFIED ✗
+
+────────────────────────────────────────────────────────────────────────────────
+BIT SIZE: 127
+────────────────────────────────────────────────────────────────────────────────
+N = 137524771864208156028430259349934309717.0
+p = 10508623501177419659.0
+q = 13086849276577416863.0
+
+Curvature Analysis:
+  κ(p) = 11.855026
+  κ(q) = 11.914415
+  |κ(p) - κ(q)| = 5.938828e-02
+  Hypothesis 1 (< 1e-16): FAIL ✗
+
+Geometric Resolution Analysis:
+  θ'(p, 0.3) = 1.425778
+  θ'(q, 0.3) = 1.142691
+  Relative difference = 19.85%
+  Hypothesis 2 (< 1%): FAIL ✗
+
+Overall: FALSIFIED ✗
+
+================================================================================
+OVERALL CONCLUSION
+================================================================================
+
+✗ HYPOTHESIS FALSIFIED AT ALL SCALES
+
+The geometric resonance hypothesis does not hold at any tested bit size
+from 10 bits to 127 bits. Both the curvature invariant and geometric
+resolution conditions fail across the entire range.
+
+Results exported to: multi_scale_results.json
+
+================================================================================

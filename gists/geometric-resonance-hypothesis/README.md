@@ -1,13 +1,31 @@
 # Geometric Resonance Hypothesis Validation
 
+## Multi-Scale Test Results
+
+**Status**: **FALSIFIED AT ALL SCALES** (10, 20, 30, 40, 50, 60, 127 bits)
+
+| Bit Size | κ Pass | θ' Pass | Overall | κ Difference | θ' Rel. Diff |
+|----------|--------|---------|---------|--------------|--------------|
+| 9        | ✗      | ✗       | FAIL    | 2.85e-02     | 10.84%       |
+| 19       | ✗      | ✗       | FAIL    | 1.04e-03     | 35.42%       |
+| 29       | ✗      | ✗       | FAIL    | 9.89e-05     | 20.02%       |
+| 39       | ✗      | ✗       | FAIL    | 1.65e-05     | 9.57%        |
+| 49       | ✗      | ✗       | FAIL    | 4.84e-07     | 26.60%       |
+| 59       | ✗      | ✗       | FAIL    | 1.41e-08     | 30.68%       |
+| 127      | ✗      | ✗       | FAIL    | 5.94e-02     | 19.85%       |
+
+**Legend**: κ = curvature invariant (threshold: < 1e-16), θ' = geometric resolution (threshold: < 1%)
+
+**Conclusion**: The hypothesis does not hold at any tested scale. Both the curvature invariant and geometric resolution conditions fail across the entire range from 10 bits to 127 bits.
+
 ## Executive Summary
 
 **Status**: **FALSIFIED**  
-**Date**: 2025-11-16T18:23:03Z  
+**Date**: 2025-11-16T18:34:19Z  
 **Precision**: 720 decimal places  
-**Target**: Gate 1 (127-bit challenge semiprime)
+**Tests**: 7 bit sizes (9, 19, 29, 39, 49, 59, 127 bits)
 
-This gist validates the geometric resonance hypothesis proposed in `.github/conversations.md` against the official Gate 1 target from `docs/VALIDATION_GATES.md`.
+This gist validates the geometric resonance hypothesis proposed in `.github/conversations.md` against multiple scales, including the official Gate 1 target from `docs/VALIDATION_GATES.md`.
 
 ## Hypothesis Under Test
 
@@ -71,20 +89,35 @@ Relative difference = 19.85% (0.1985...)
 
 ## Conclusion
 
+### Multi-Scale Analysis
+
+Testing across 7 bit sizes (9, 19, 29, 39, 49, 59, 127 bits) reveals that **the hypothesis fails at all scales**:
+
+- **Curvature invariant**: All tests fail the κ threshold (< 1e-16). Differences range from 1.41e-08 (59 bits) to 5.94e-02 (127 bits), consistently exceeding the threshold by many orders of magnitude.
+
+- **Geometric resolution**: All tests fail the θ' threshold (< 1%). Relative differences range from 9.57% (39 bits) to 35.42% (19 bits), consistently exceeding the 1% threshold by factors of 10-35×.
+
+- **Scale dependency**: While κ differences generally decrease with bit size (suggesting factors become more similar), θ' differences show no consistent pattern and remain unacceptably large across all scales.
+
+### Gate 1 Specific Results
+
 Both components of the geometric resonance hypothesis are **falsified** when tested against the Gate 1 challenge semiprime:
 
 1. The curvature values κ(p) and κ(q) differ by approximately 0.059, which is **10¹⁴ times larger** than the proposed threshold of 1e-16.
 
 2. The geometric resolution values θ'(p, 0.3) and θ'(q, 0.3) differ by approximately 19.85% in relative terms, which is **nearly 20 times larger** than the 1% threshold.
 
-These results indicate that the hypothesis—as formulated—does not hold for the Gate 1 target. The curvature and geometric resolution properties of the prime factors p and q are not sufficiently similar to support the claim that "resonance amplitude peaks align with low κ(n) for semiprimes."
+These results indicate that the hypothesis—as formulated—does not hold at any tested scale. The curvature and geometric resolution properties of the prime factors p and q are not sufficiently similar to support the claim that "resonance amplitude peaks align with low κ(n) for semiprimes."
 
 ## Artifacts
 
-1. **`validate_hypothesis.py`**: Python validation script with mpmath (720 decimal places precision)
-2. **`results.json`**: Complete numerical results in JSON format
-3. **`validation_run.log`**: Full console output from validation run
-4. **`README.md`**: This summary document
+1. **`validate_hypothesis.py`**: Python validation script for Gate 1 (127-bit) with mpmath (720 decimal places precision)
+2. **`validate_multi_scale.py`**: Python validation script for multi-scale testing (10-127 bits)
+3. **`results.json`**: Complete numerical results for Gate 1 in JSON format
+4. **`multi_scale_results.json`**: Complete numerical results for all scales in JSON format
+5. **`validation_run.log`**: Full console output from Gate 1 validation run
+6. **`multi_scale_run.log`**: Full console output from multi-scale validation run
+7. **`README.md`**: This summary document
 
 ## Methodology
 
@@ -105,21 +138,38 @@ Alternative formulations, different threshold values, or modifications to the fu
 
 ## Recommendations
 
-Based on these results:
+Based on these multi-scale results:
 
-1. **Do not integrate** the curvature-guided sampling enhancement into the main factorization algorithm, as the underlying hypothesis does not hold for Gate 1.
+1. **Do not integrate** the curvature-guided sampling enhancement into the main factorization algorithm. The underlying hypothesis does not hold at any tested scale from 10 bits to 127 bits.
 
-2. **Re-examine** the mathematical foundations of the hypothesis. The observed differences suggest that κ(p) and κ(q) are influenced by the magnitude of the factors rather than converging to similar values.
+2. **Re-examine** the mathematical foundations of the hypothesis. The observed pattern suggests:
+   - κ(p) and κ(q) differences decrease with bit size but never approach the required threshold
+   - θ' differences show no consistent convergence and remain large across all scales
+   - The hypothesis may require fundamentally different formulations or threshold criteria
 
-3. **Consider alternative metrics** if pursuing geometric approaches. The current formulations do not exhibit the required invariance properties for semiprime factors.
+3. **Consider alternative metrics** if pursuing geometric approaches. The current formulations do not exhibit the required invariance properties for semiprime factors at any tested scale.
 
 ## Reproducibility
 
-To reproduce this validation:
+To reproduce the single-scale validation (Gate 1):
 
 ```bash
 cd gists/geometric-resonance-hypothesis
 pip3 install mpmath
+python3 validate_hypothesis.py
+```
+
+Expected output: Validation completes with "HYPOTHESIS FALSIFIED" conclusion and generates `results.json`.
+
+To reproduce the multi-scale validation (10-127 bits):
+
+```bash
+cd gists/geometric-resonance-hypothesis
+pip3 install mpmath sympy
+python3 validate_multi_scale.py
+```
+
+Expected output: Tests at 7 bit sizes, all showing "FAIL", and generates `multi_scale_results.json`.
 python3 validate_hypothesis.py
 ```
 
