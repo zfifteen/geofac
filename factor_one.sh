@@ -85,21 +85,6 @@ output=$(java \
 # Print the output
 echo "$output"
 
-# Check diagnostics JSON first
-DIAG_JSON="$OUT_DIR/factorization.json"
-if [ -f "$DIAG_JSON" ] && command -v jq >/dev/null 2>&1; then
-    status=$(jq -r '.status // empty' "$DIAG_JSON")
-    p=$(jq -r '.result.p // empty' "$DIAG_JSON")
-    q=$(jq -r '.result.q // empty' "$DIAG_JSON")
-    if [ "$status" = "SUCCESS" ] && [ -n "$p" ] && [ -n "$q" ]; then
-        echo "Factorization successful."
-        echo "$p"
-        echo "$q"
-        echo "pq_matches_N=true"
-        exit 0
-    fi
-fi
-
 # Check for success
 if grep -q "SUCCESS" <<< "$output"; then
     echo "Factorization successful."

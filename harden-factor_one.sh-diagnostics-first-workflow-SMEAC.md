@@ -21,9 +21,9 @@ Produce a SUCCESS run where p and q are discovered (p*q = N) by geometric resona
 
 Success Criteria:
 1. factor_one.sh yields status SUCCESS (no fast-path) and writes p.txt, q.txt matching N.
-2. Diagnostics JSON includes: status, runtimeMs, samplesProcessed, precisionChosen, amplitudeStats {count,min,max,mean}, candidateCount, and candidates[] with {k, dm, amplitude, p0, dividesN, failClass} as available from shell script output.
-3. Snap misfires (failClass in {ZERO, OVERFLOW}) drop below 1% of candidates processed, as measured by shell script diagnostics.
-4. All parameters echoed (precision, samples, m-span, J, threshold, k-lo, k-hi, timeout, bitLength, adaptiveFormula). Deterministic seeds if sampling sequences used.
+2. Java diagnostics logging provides amplitude distribution stats and candidate evaluation logs when enable-diagnostics=true.
+3. Snap misfires (invalid p0 values) are logged and can be analyzed from stdout diagnostics.
+4. All parameters are logged by Java service and captured in run.log.
 
 ## E (Execution → Plan & Tasks)
 Ordered, surgical tasks—stop once SUCCESS artifacts produced.
@@ -49,8 +49,7 @@ Rollback / Abort: If changes increase timeout frequency before sample loop start
 
 ## A&L (Administration & Logistics → Artifacts & Repro)
 Artifacts per run (under results/single_run_<RUN_ID>):
-- run.log (stdout/stderr)
-- factorization.json (diagnostics as produced by shell script)
+- run.log (stdout/stderr with Java diagnostics logging)
 - p.txt, q.txt on SUCCESS
 
 Logging Requirements:
@@ -97,11 +96,11 @@ Only after SUCCESS: evaluate scaling approach for Gate 2 (within [1e14,1e18]) us
 ---
 ### Quick Checklist for Reviewers
 - [ ] factor_one.sh hardened with improved diagnostics and artifact generation
-- [ ] Added diagnostics files appear after run
+- [ ] Java diagnostics logging enabled and captured in run.log
 - [ ] precision log matches rule
 - [ ] No classical factoring code introduced
 - [ ] Snap quorum logic deterministic & documented *(N/A for this PR: shell script & docs only)*
-- [ ] JSON schema contains required fields *(N/A for this PR: shell script & docs only)*
+- [ ] JSON diagnostics schema *(N/A: not implemented in this PR)*
 - [ ] Issue #29 referenced in commit messages
 
 ---
