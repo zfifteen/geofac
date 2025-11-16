@@ -1,4 +1,4 @@
-# Harden factor_one.sh & Diagnostics-First Workflow (S.M.E.A.C Brief)
+# Harden factor_one.sh & Diagnostics-First Workflow (SMEAC Brief)
 
 Issue Reference: #29  
 Branch: factor-one-shell-script  
@@ -21,27 +21,24 @@ Produce a SUCCESS run where p and q are discovered (p*q = N) by geometric resona
 
 Success Criteria:
 1. factor_one.sh yields status SUCCESS (no fast-path) and writes p.txt, q.txt matching N.
-2. Diagnostics JSON includes: status, runtimeMs, samplesProcessed, precisionChosen, amplitudeStats {count,min,max,mean}, candidateCount, and candidates[] with {k, dm, amplitude, p0, dividesN, failClass}.
-3. Snap misfires (failClass in {ZERO, OVERFLOW}) drop below 1% of candidates processed.
+2. Diagnostics JSON includes: status, runtimeMs, samplesProcessed, precisionChosen, amplitudeStats {count,min,max,mean}, candidateCount, and candidates[] with {k, dm, amplitude, p0, dividesN, failClass} as available from shell script output.
+3. Snap misfires (failClass in {ZERO, OVERFLOW}) drop below 1% of candidates processed, as measured by shell script diagnostics.
 4. All parameters echoed (precision, samples, m-span, J, threshold, k-lo, k-hi, timeout, bitLength, adaptiveFormula). Deterministic seeds if sampling sequences used.
 
 ## E (Execution → Plan & Tasks)
 Ordered, surgical tasks—stop once SUCCESS artifacts produced.
 
-1. Add DiagnosticsEmitter (JSON + optional CSV) invoked at search end and per candidate batch.
-2. Extend FactorizerService snap logic:
-   - Guard: if p0 <= 1 or p0 >= N → resnap using ±Δk neighbor (deterministic offset, e.g., Δk = (k-hi - k-lo)/64).
-   - Multi-snap quorum: compute projections for k, k+Δk, k-Δk; accept if ≥2 agree within ±1; otherwise classify failClass=INCOHERENT.
-   - Slope-aware rounding: derive local kernel slope; if near plateau clamp to nearest integer; else bias rounding toward direction of steepest descent.
-   - Overflow clamp: if digits > bitlen+4 then mark OVERFLOW and skip divisibility test.
-3. Parameter sweep (deterministic shells; do NOT randomize):
+1. Harden factor_one.sh to improve diagnostics and artifact generation:
+   - Ensure per-run artifacts (run.log, factorization.json) are written reliably.
+   - Echo all relevant parameters (precision, samples, m-span, J, threshold, k-lo, k-hi, timeout, bitLength, adaptiveFormula) to logs and artifacts.
+   - Enforce deterministic sampling and parameter selection; log seeds and configuration.
+   - Add guard clauses to prevent classical fallback methods and probabilistic retries.
+   - Optionally stage two runs (high specificity then recall) into same OUT_DIR when first fails.
+2. Parameter sweep (deterministic shells; do NOT randomize):
    - Plan 1 (specificity): precision=640; samples=2000; m-span=128; J=6; threshold=0.92; k-lo/hi=0.28/0.42; timeout=30s.
    - Plan 2 (recall): precision=640–708; samples=5000; m-span=160; J=7; threshold=0.88; k-lo/hi=0.25/0.45; timeout=60s.
    - Plan 3 (verification): precision=708; samples=7500; m-span=200; J=8; threshold=0.86; k-lo/hi=0.20/0.50; timeout=90s.
    Abort early if SUCCESS; archive each run's JSON for comparison.
-4. Implement params.json echo containing all -D flags + adaptive precision decision.
-5. Add CandidateAggregator to batch candidate emissions every N (e.g., 50) to keep JSON size manageable while preserving order.
-6. Update factor_one.sh optionally to stage two runs (high specificity then recall) into same OUT_DIR when first fails.
 
 Guard Clauses / Constraints:
 - Do not introduce probabilistic loops; all sampling sequences should be deterministic (Sobol/Halton acceptable if seed fixed and logged).
@@ -53,9 +50,7 @@ Rollback / Abort: If changes increase timeout frequency before sample loop start
 ## A&L (Administration & Logistics → Artifacts & Repro)
 Artifacts per run (under results/single_run_<RUN_ID>):
 - run.log (stdout/stderr)
-- factorization.json (full diagnostics)
-- candidates.csv (optional; same columns as candidates[])
-- params.json (captured config + precision rule evaluation + timestamp)
+- factorization.json (diagnostics as produced by shell script)
 - p.txt, q.txt on SUCCESS
 
 Logging Requirements:
@@ -94,19 +89,19 @@ Escalation:
 
 ---
 ### Definition of Done (Reaffirmed)
-A deterministic one-shot run (no classical fallbacks) returns SUCCESS with valid p,q and complete diagnostic artifacts enabling independent reproduction and snap analysis. Snap failure classes largely eliminated (<1% ZERO/OVERFLOW). All changes confined to minimal new helpers + guarded modifications; no speculative abstractions.
+A deterministic one-shot run (no classical fallbacks) returns SUCCESS with valid p,q and complete diagnostic artifacts enabling independent reproduction and snap analysis. Shell script hardened with improved diagnostics, artifact generation, and parameter logging. All changes confined to shell script improvements and documentation; Java implementation changes deferred to future PR.
 
 ### Post-SUCCESS Next Step (Out of Scope Here)
 Only after SUCCESS: evaluate scaling approach for Gate 2 (within [1e14,1e18]) using same deterministic harness. Not part of this PR.
 
 ---
 ### Quick Checklist for Reviewers
-- [ ] factor_one.sh unchanged except optional staging (if added)
+- [ ] factor_one.sh hardened with improved diagnostics and artifact generation
 - [ ] Added diagnostics files appear after run
 - [ ] precision log matches rule
 - [ ] No classical factoring code introduced
-- [ ] Snap quorum logic deterministic & documented
-- [ ] JSON schema contains required fields
+- [ ] Snap quorum logic deterministic & documented *(N/A for this PR: shell script & docs only)*
+- [ ] JSON schema contains required fields *(N/A for this PR: shell script & docs only)*
 - [ ] Issue #29 referenced in commit messages
 
 ---

@@ -74,14 +74,13 @@ output=$(java \
   -Dgeofac.samples=7500 \
   -Dgeofac.m-span=200 \
   -Dgeofac.j=8 \
-  -Dgeofac.threshold=0.88 \
+   -Dgeofac.threshold=0.86 \
   -Dgeofac.k-lo=0.20 \
   -Dgeofac.k-hi=0.50 \
   -Dgeofac.search-timeout-ms=90000 \
-  -Dgeofac.enable-fast-path=false \
-  -Dgeofac.enable-diagnostics=true \
-  -Dgeofac.diagnostics.outputDir="$OUT_DIR" \
-  -jar "$JAR" factor "$TARGET_N" 2>&1 | tee "$OUT_DIR/run.log")
+   -Dgeofac.enable-fast-path=false \
+   -Dgeofac.enable-diagnostics=true \
+   -jar "$JAR" factor "$TARGET_N" 2>&1 | tee "$OUT_DIR/run.log")
 
 # Print the output
 echo "$output"

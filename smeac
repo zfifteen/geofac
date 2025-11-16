@@ -10,7 +10,7 @@ NOW_UTC="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 DATE_YMD="$(date -u +%Y%m%d)"
 BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
 SHA="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
-JAVA_VER="$(java -version 2>&1 | head -n1 | tr -d '"')"
+JAVA_VER="$(java -version 2>&1 | head -n1 | tr -d '"' || echo 'unknown')"
 
 # Derive short description from DETAILS (first 5 words, lowercase, hyphenated)
 if [[ -n "$DETAILS" ]]; then
