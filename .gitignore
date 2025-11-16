@@ -15,5 +15,5 @@ geofac.iml
 # Snapshots directory
 .snapshots/
 
-# Validation benchmark results
-results/validation/
+# Results and proof pack artifacts
+results/
