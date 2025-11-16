@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+set -euo pipefail
+
 # One-shot factorization of the target N using geometric resonance
 # Produces per-run diagnostics and plaintext factors if successful
 #
@@ -40,7 +42,7 @@ java \
   -Dgeofac.enable-fast-path=false \
   -Dgeofac.enable-diagnostics=true \
   -Dgeofac.precision=708 \
-  -Dgeofac.samples=20000 \
+  -Dgeofac.samples=7500 \
   -Dgeofac.m-span=200 \
   -Dgeofac.j=8 \
   -Dgeofac.threshold=0.85 \
