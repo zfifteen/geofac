@@ -77,10 +77,7 @@ public class FactorizerService {
     private static final BigInteger GATE_2_MAX = new BigInteger("1000000000000000000"); // 10^18
     private static final BigInteger GATE_1_CHALLENGE = new BigInteger("137524771864208156028430259349934309717");
 
-    // Legacy constant names for backward compatibility
-    private static final BigInteger MIN = GATE_2_MIN;
-    private static final BigInteger MAX = GATE_2_MAX;
-    private static final BigInteger CHALLENGE_127 = GATE_1_CHALLENGE;
+
 
     /**
      * Factor a semiprime N into p × q.
@@ -101,8 +98,8 @@ public class FactorizerService {
             throw new IllegalArgumentException("N must be at least 10.");
         }
 
-        // Adaptive precision based on bit length (using PrecisionUtil formula)
-        // Fixed: Was using 4x + 200, now using 2x + 150 as per PrecisionUtil
+        // Adaptive precision based on bit length (using the PrecisionUtil formula)
+        // Fixed: Was using 4x + 200, now using 2x + 150 as per the PrecisionUtil formula
         int adaptivePrecision = Math.max(precision, N.bitLength() * 2 + 150);
 
         // Create config snapshot for reproducibility
@@ -118,8 +115,8 @@ public class FactorizerService {
         );
 
         // Enforce project validation gates. See docs/VALIDATION_GATES.md for details.
-        boolean isGate1Challenge = N.equals(CHALLENGE_127);
-        boolean isInGate2Range = (N.compareTo(MIN) >= 0 && N.compareTo(MAX) <= 0);
+        boolean isGate1Challenge = N.equals(GATE_1_CHALLENGE);
+        boolean isInGate2Range = (N.compareTo(GATE_2_MIN) >= 0 && N.compareTo(GATE_2_MAX) <= 0);
 
         if (!isInGate2Range && !(allow127bitBenchmark && isGate1Challenge)) {
             throw new IllegalArgumentException(
@@ -128,8 +125,8 @@ public class FactorizerService {
         }
 
         // Gate enforcement with property-gated exception for 127-bit benchmark
-        boolean outOfGate = (N.compareTo(MIN) < 0 || N.compareTo(MAX) > 0);
-        boolean isChallenge = N.equals(CHALLENGE_127);
+        boolean outOfGate = (N.compareTo(GATE_2_MIN) < 0 || N.compareTo(GATE_2_MAX) > 0);
+        boolean isChallenge = N.equals(GATE_1_CHALLENGE);
         if (outOfGate && !(allow127bitBenchmark && isChallenge)) {
             throw new IllegalArgumentException("N must be in [1e14, 1e18]");
         }
@@ -221,7 +218,7 @@ public class FactorizerService {
         }
 
         // Use the provided custom config, but still apply adaptive precision
-        // Fixed: Was using 4x + 200, now using 2x + 150 as per PrecisionUtil
+        // Fixed: Was using 4x + 200, now using 2x + 150 as per the PrecisionUtil formula
         int adaptivePrecision = Math.max(customConfig.precision(), N.bitLength() * 2 + 150);
         FactorizerConfig config = new FactorizerConfig(
                 adaptivePrecision,
@@ -235,13 +232,13 @@ public class FactorizerService {
         );
 
         // Enforce project validation gates. See docs/VALIDATION_GATES.md for details.
-        boolean isGate1Challenge = N.equals(CHALLENGE_127);
-        boolean isInGate2Range = (N.compareTo(MIN) >= 0 && N.compareTo(MAX) <= 0);
+        boolean isGate1Challenge = N.equals(GATE_1_CHALLENGE);
+        boolean isInGate2Range = (N.compareTo(GATE_2_MIN) >= 0 && N.compareTo(GATE_2_MAX) <= 0);
 
         if (!isGate1Challenge && !isInGate2Range) {
             throw new IllegalArgumentException(
                 String.format("N=%s violates validation gates. Must be Gate 1 challenge or in Gate 2 range [%s, %s]",
-                    N, MIN, MAX));
+                    N, GATE_2_MIN, GATE_2_MAX));
         }
 
         if (isGate1Challenge && allow127bitBenchmark) {
@@ -338,16 +335,17 @@ public class FactorizerService {
                         candidateLogs.add(String.format("Candidate: dm=%d, amplitude=%.6f, p0=%s", dm, amplitude.doubleValue(), p0));
                     }
                     
-                    // Test candidate and neighbors
-                    BigInteger[] hit = testNeighbors(N, p0);
-                    if (hit != null) {
-                        result.compareAndSet(null, hit);
+                    // Refine candidate using Newton-Raphson
+                    BigInteger p = newtonRefinement(p0, N, 20);
+                    if (p != null) {
+                        BigInteger q = N.divide(p);
+                        result.compareAndSet(null, ordered(p, q));
                         if (enableDiagnostics && candidateLogs != null) {
-                            candidateLogs.add(String.format("Accepted: factors %s * %s", hit[0], hit[1]));
+                            candidateLogs.add(String.format("Accepted: factors %s * %s", p, q));
                         }
                     } else {
                         if (enableDiagnostics && candidateLogs != null) {
-                            candidateLogs.add("Rejected: no neighbor divides N");
+                            candidateLogs.add("Rejected: refinement failed");
                         }
                     }
                 }
@@ -362,16 +360,54 @@ public class FactorizerService {
         return null;
     }
 
-    private BigInteger[] testNeighbors(BigInteger N, BigInteger pCenter) {
-        // Test p-10 to p+10
-        for (int off = -10; off <= 10; off++) {
+    /**
+     * Refine candidate p0 using Newton-Raphson iteration.
+     *
+     * For balanced semiprime N = p×q where p ≈ q ≈ √N, iteratively refine p0
+     * toward exact factor by solving f(p) = N - p×(N/p) = 0.
+     *
+     * @param p0 Initial candidate (from phase-corrected snap)
+     * @param N Semiprime to factor
+     * @param maxIterations Maximum refinement iterations (typically 10-20)
+     * @return Exact factor if found, or null
+     */
+    private static BigInteger newtonRefinement(BigInteger p0, BigInteger N, int maxIterations) {
+        BigDecimal p = new BigDecimal(p0);
+        BigDecimal n = new BigDecimal(N);
+
+        for (int i = 0; i < maxIterations; i++) {
+            // Check if current p is exact factor (convert to BigInteger and check)
+            BigInteger pInt = p.toBigInteger();
+            if (N.mod(pInt).equals(BigInteger.ZERO)) {
+                return pInt;  // Found exact factor!
+            }
+
+            // Newton step: p_new = (p + N/p) / 2
+            BigDecimal q = n.divide(p, MathContext.DECIMAL128);
+            BigDecimal pNew = p.add(q).divide(BigDecimal.valueOf(2), MathContext.DECIMAL128);
+
+            // Check convergence
+            if (pNew.subtract(p).abs().compareTo(BigDecimal.ONE) < 0) {
+                break;  // Converged (no more progress)
+            }
+
+            p = pNew;
+        }
+
+        // After convergence, check p and its neighbors
+        BigInteger pFinal = p.toBigInteger();
+        return testNeighbors(N, pFinal);
+    }
+
+    private static BigInteger testNeighbors(BigInteger N, BigInteger pCenter) {
+        // Test p-5 to p+5
+        for (int off = -5; off <= 5; off++) {
             BigInteger p = pCenter.add(BigInteger.valueOf(off));
             if (p.compareTo(BigInteger.ONE) <= 0 || p.compareTo(N) >= 0) {
                 continue;
             }
             if (N.mod(p).equals(BigInteger.ZERO)) {
-                BigInteger q = N.divide(p);
-                return ordered(p, q);
+                return p;
             }
         }
         return null;

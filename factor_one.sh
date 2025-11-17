@@ -42,7 +42,7 @@ java \
   -Dgeofac.enable-fast-path=false \
   -Dgeofac.enable-diagnostics=true \
   -Dgeofac.precision=400 \
-  -Dgeofac.samples=10000 \
+   -Dgeofac.samples=1000 \
   -Dgeofac.m-span=100 \
   -Dgeofac.j=6 \
   -Dgeofac.threshold=0.50 \
