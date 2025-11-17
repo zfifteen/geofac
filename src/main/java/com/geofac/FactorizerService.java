@@ -335,8 +335,8 @@ public class FactorizerService {
                         candidateLogs.add(String.format("Candidate: dm=%d, amplitude=%.6f, p0=%s", dm, amplitude.doubleValue(), p0));
                     }
                     
-                    // Refine candidate using binary search
-                    BigInteger p = binarySearchRefinement(p0, N, BigDecimal.valueOf(5.0));
+                    // Refine candidate using linear search
+                    BigInteger p = linearSearchRefinement(p0, N, BigDecimal.valueOf(5.0));
                     if (p != null) {
                         BigInteger q = N.divide(p);
                         result.compareAndSet(null, ordered(p, q));
@@ -361,16 +361,16 @@ public class FactorizerService {
     }
 
     /**
-     * Refine candidate p0 using linear search within error percentage range.
+     * Refine candidate p0 using binary search within error percentage range.
      *
-     * Searches for exact factor within ±errorPercent of p0 with step 10^15.
+     * Searches for exact factor within ±errorPercent of p0 using binary search.
      *
      * @param p0 Initial candidate (from phase-corrected snap)
      * @param N Semiprime to factor
-     * @param errorPercent Error percentage for search radius (e.g., 1.0 for 1.0%)
+     * @param errorPercent Error percentage for search radius (e.g., 5.0 for 5.0%)
      * @return Exact factor if found, or null
      */
-    private static BigInteger binarySearchRefinement(BigInteger p0, BigInteger N, BigDecimal errorPercent) {
+    private static BigInteger linearSearchRefinement(BigInteger p0, BigInteger N, BigDecimal errorPercent) {
         // Calculate search range based on error percentage
         BigDecimal p0Dec = new BigDecimal(p0);
         BigDecimal delta = p0Dec.multiply(errorPercent).divide(BigDecimal.valueOf(100));
@@ -378,16 +378,24 @@ public class FactorizerService {
 
         BigInteger lo = p0.subtract(searchRadius);
         BigInteger hi = p0.add(searchRadius);
-        BigInteger step = BigInteger.valueOf(100000000000000L); // 10^14
 
-        for (BigInteger i = lo; i.compareTo(hi) <= 0; i = i.add(step)) {
-            if (i.compareTo(BigInteger.ONE) <= 0 || i.compareTo(N) >= 0) continue;
-            if (N.mod(i).equals(BigInteger.ZERO)) {
-                return i;
+        // Binary search for exact divisor
+        while (lo.compareTo(hi) <= 0) {
+            BigInteger mid = lo.add(hi).divide(BigInteger.valueOf(2));
+
+            if (N.mod(mid).equals(BigInteger.ZERO)) {
+                return mid; // Found exact factor
+            }
+
+            BigInteger midSquared = mid.multiply(mid);
+            if (midSquared.compareTo(N) < 0) {
+                lo = mid.add(BigInteger.ONE);
+            } else {
+                hi = mid.subtract(BigInteger.ONE);
             }
         }
 
-        return null;
+        return null; // Not found in range
     }
 
 
