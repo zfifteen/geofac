@@ -64,15 +64,23 @@ public class FactorizerService {
     @Value("${geofac.allow-127bit-benchmark:false}")
     private boolean allow127bitBenchmark;
 
+    @Value("${geofac.enable-diagnostics:false}")
+    private boolean enableDiagnostics;
+
     // Constants for benchmark fast-path (disabled by default)
     private static final BigInteger BENCHMARK_N = new BigInteger("137524771864208156028430259349934309717");
     private static final BigInteger BENCHMARK_P = new BigInteger("10508623501177419659");
     private static final BigInteger BENCHMARK_Q = new BigInteger("13086849276577416863");
-    
-    // Gate constants
-    private static final BigInteger MIN = new BigInteger("100000000000000"); // 10^14
-    private static final BigInteger MAX = new BigInteger("1000000000000000000"); // 10^18
-    private static final BigInteger CHALLENGE_127 = new BigInteger("137524771864208156028430259349934309717");
+
+    // Gate constants (see docs/VALIDATION_GATES.md)
+    private static final BigInteger GATE_2_MIN = new BigInteger("100000000000000"); // 10^14
+    private static final BigInteger GATE_2_MAX = new BigInteger("1000000000000000000"); // 10^18
+    private static final BigInteger GATE_1_CHALLENGE = new BigInteger("137524771864208156028430259349934309717");
+
+    // Legacy constant names for backward compatibility
+    private static final BigInteger MIN = GATE_2_MIN;
+    private static final BigInteger MAX = GATE_2_MAX;
+    private static final BigInteger CHALLENGE_127 = GATE_1_CHALLENGE;
 
     /**
      * Factor a semiprime N into p × q.
@@ -93,8 +101,9 @@ public class FactorizerService {
             throw new IllegalArgumentException("N must be at least 10.");
         }
 
-        // Adaptive precision based on bit length (repository rule)
-        int adaptivePrecision = Math.max(precision, N.bitLength() * 4 + 200);
+        // Adaptive precision based on bit length (using PrecisionUtil formula)
+        // Fixed: Was using 4x + 200, now using 2x + 150 as per PrecisionUtil
+        int adaptivePrecision = Math.max(precision, N.bitLength() * 2 + 150);
 
         // Create config snapshot for reproducibility
         FactorizerConfig config = new FactorizerConfig(
@@ -112,7 +121,7 @@ public class FactorizerService {
         boolean isGate1Challenge = N.equals(GATE_1_CHALLENGE);
         boolean isInGate2Range = (N.compareTo(GATE_2_MIN) >= 0 && N.compareTo(GATE_2_MAX) <= 0);
 
-        if (!isInGate2Range && !(allowGate1Benchmark && isGate1Challenge)) {
+        if (!isInGate2Range && !(allow127bitBenchmark && isGate1Challenge)) {
             throw new IllegalArgumentException(
                 "Input N does not conform to project validation gates. See docs/VALIDATION_GATES.md for policy."
             );
@@ -212,7 +221,8 @@ public class FactorizerService {
         }
 
         // Use the provided custom config, but still apply adaptive precision
-        int adaptivePrecision = Math.max(customConfig.precision(), N.bitLength() * 4 + 200);
+        // Fixed: Was using 4x + 200, now using 2x + 150 as per PrecisionUtil
+        int adaptivePrecision = Math.max(customConfig.precision(), N.bitLength() * 2 + 150);
         FactorizerConfig config = new FactorizerConfig(
                 adaptivePrecision,
                 customConfig.samples(),
@@ -234,7 +244,7 @@ public class FactorizerService {
                     N, GATE_2_MIN, GATE_2_MAX));
         }
 
-        if (isGate1Challenge && allowGate1Benchmark) {
+        if (isGate1Challenge && allow127bitBenchmark) {
             log.info("Gate 1 challenge factorization: N={} ({} bits)", N, N.bitLength());
         } else if (isInGate2Range) {
             log.info("Gate 2 factorization: N={} ({} bits)", N, N.bitLength());
