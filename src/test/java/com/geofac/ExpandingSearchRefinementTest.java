@@ -33,9 +33,8 @@ public class ExpandingSearchRefinementTest {
 
     /**
      * Test with a small semiprime in the Gate 2 range.
-     * N = 10,000,000,000,013 (10^13 + 13)
-     * p = 3,162,277
-     * q = 3,162,319
+     * N = 10000000000000013 (10^16 + 13)
+     * Product of two primes near sqrt(N)
      */
     @Test
     void testSmallSemiprime() {

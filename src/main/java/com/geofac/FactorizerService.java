@@ -370,7 +370,7 @@ public class FactorizerService {
      */
     private BigInteger[] expandingSearchRefinement(BigInteger p0, BigInteger N) {
         // Define search increments (expanding rings)
-        // Based on observed error: ~0.37% for 127-bit = ~4×10^16 units
+        // For Gate 2 range (10^14-10^18), offsets up to ±100M cover practical error ranges
         final long[] SEARCH_RADII = {
             10L,           // ±10 (original testNeighbors range)
             100L,          // ±100
@@ -379,7 +379,7 @@ public class FactorizerService {
             100_000L,      // ±100K
             1_000_000L,    // ±1M
             10_000_000L,   // ±10M
-            100_000_000L   // ±100M (covers >0.001% error for 127-bit)
+            100_000_000L   // ±100M
         };
         
         // Check p0 first (might already be exact)
@@ -388,26 +388,31 @@ public class FactorizerService {
             return ordered(p0, q);
         }
         
-        // Expand search in rings
+        // Expand search in rings, checking all offsets within each ring
+        long previous = 0L;
         for (long radius : SEARCH_RADII) {
-            BigInteger offset = BigInteger.valueOf(radius);
-            
-            // Test both directions at this radius
-            // Check lower candidate: p0 - offset
-            BigInteger pLower = p0.subtract(offset);
-            if (pLower.compareTo(BigInteger.TWO) >= 0 && 
-                N.mod(pLower).equals(BigInteger.ZERO)) {
-                BigInteger q = N.divide(pLower);
-                return ordered(pLower, q);
+            // Check all offsets from previous+1 to radius
+            for (long d = previous + 1; d <= radius; d++) {
+                BigInteger offset = BigInteger.valueOf(d);
+                
+                // Test both directions at this offset
+                // Check lower candidate: p0 - offset
+                BigInteger pLower = p0.subtract(offset);
+                if (pLower.compareTo(BigInteger.TWO) >= 0 && 
+                    N.mod(pLower).equals(BigInteger.ZERO)) {
+                    BigInteger q = N.divide(pLower);
+                    return ordered(pLower, q);
+                }
+                
+                // Check upper candidate: p0 + offset
+                BigInteger pUpper = p0.add(offset);
+                if (pUpper.compareTo(N) < 0 && 
+                    N.mod(pUpper).equals(BigInteger.ZERO)) {
+                    BigInteger q = N.divide(pUpper);
+                    return ordered(pUpper, q);
+                }
             }
-            
-            // Check upper candidate: p0 + offset
-            BigInteger pUpper = p0.add(offset);
-            if (pUpper.compareTo(N) < 0 && 
-                N.mod(pUpper).equals(BigInteger.ZERO)) {
-                BigInteger q = N.divide(pUpper);
-                return ordered(pUpper, q);
-            }
+            previous = radius;
         }
         
         return null; // No factor found within search budget
