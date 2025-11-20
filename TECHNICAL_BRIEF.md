@@ -80,9 +80,13 @@ java -Dgeofac.precision=708 -Dgeofac.samples=20000 -Dgeofac.m-span=200 -Dgeofac.
 - **Artifacts**: results/single_run_YYYYMMDD-HHMMSS/ (run.log, factorization.json if success).
 
 ## Validation Gates
-- **Gate 1**: 127-bit challenge N only (no fast-path).
-- **Gate 2**: 10^14–10^18 range for broader claims.
+- **Gate 1**: 30-bit quick sanity check (1073676287 = 32749 × 32771)
+- **Gate 2**: 60-bit scaling validation (1152921504606846883 = 1073741789 × 1073741827)
+- **Gate 3**: 127-bit challenge verification (no fast-path)
+- **Gate 4**: 10^14–10^18 operational range for broader claims
 - **Constraints**: Deterministic methods only; no stochastic retries; log precision/reproducibility.
+
+See docs/VALIDATION_GATES.md for complete gate specifications.
 
 ## How to Run and Test
 1. **Build**: `./gradlew clean build -x test`

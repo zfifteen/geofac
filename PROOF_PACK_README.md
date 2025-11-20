@@ -94,7 +94,7 @@ The script automatically detects and documents your hardware configuration in th
 
 ## Validation Gates
 
-This project follows a strict two-gate validation policy defined in `docs/VALIDATION_GATES.md`:
+This project follows a strict four-gate validation policy defined in `docs/VALIDATION_GATES.md`:
 
 - **Gate 1**: The 127-bit challenge number (137524771864208156028430259349934309717)
 - **Gate 2**: Operational range [1e14, 1e18] for general semiprimes

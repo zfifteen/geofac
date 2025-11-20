@@ -5,7 +5,7 @@ This directory contains comprehensive documentation for the geometric resonance 
 ## Documents
 
 ### [VALIDATION_GATES.md](VALIDATION_GATES.md)
-**Official Project Policy** — Defines the two-gate validation policy for the project.
+**Official Project Policy** — Defines the four-gate validation policy for the project.
 
 **Contents:**
 - **Gate 1:** The 127-bit challenge number, its factors, and success criteria.
