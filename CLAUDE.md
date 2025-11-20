@@ -33,7 +33,7 @@ Treat cyclomatic complexity like gravity—escape it.
 Work from first principles. Guard them in code.
 
 ### Validation Gate (Non-Negotiable)
-- The project follows a strict, two-gate validation policy. All code and analysis must adhere to the rules defined in **[docs/VALIDATION_GATES.md](docs/VALIDATION_GATES.md)**.
+- The project follows a strict, four-gate validation policy. All code and analysis must adhere to the rules defined in **[docs/VALIDATION_GATES.md](docs/VALIDATION_GATES.md)**.
 - Small-prime "wins" are noise. They don't generalize. They don't count.
 - Only official challenge numbers are to be used for semiprimes.
 
