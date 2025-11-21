@@ -242,16 +242,16 @@ From experimental comparison (documented in WHITEPAPER.md, Section 5):
 
 ### Visual Comparison
 
-**Sample distribution (first 100 samples in k ∈ [0.25, 0.45]):**
+**Sample distribution (first 100 samples in k ∈ [0.08, 0.15]):**
 
 ```
 Golden Ratio (uniform coverage):
-0.25 |X   X   X   X   X   X   X   X   X   X|  0.45
-     Gaps: ~0.002 (consistent)
+0.08 |X   X   X   X   X   X   X   X   X   X|  0.15
+     Gaps: ~0.0007 (consistent)
 
 Pseudo-Random (clustering):
-0.25 |XX X    XXX      X  XX   X     XX  X |  0.45
-     Gaps: 0.001-0.015 (variable)
+0.08 |XX X    XXX      X  XX   X     XX  X |  0.15
+     Gaps: 0.0003-0.005 (variable)
 ```
 
 The uniform coverage of QMC reduces "wasted" samples in low-amplitude regions.

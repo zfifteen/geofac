@@ -82,7 +82,7 @@ class ValidationBenchmarkTest {
         BigInteger q = new BigInteger("11863297");
         
         com.geofac.FactorizerConfig config = new com.geofac.FactorizerConfig(
-            240, 100, 30, 3, 0.85, 0.25, 0.45, 5000
+            240, 100, 30, 3, 0.85, 0.08, 0.15, 5000
         );
         
         BenchmarkResult result = new BenchmarkResult(
@@ -117,7 +117,7 @@ class ValidationBenchmarkTest {
         // Generate small test data
         List<SemiprimeGenerator.Semiprime> semiprimes = SemiprimeGenerator.generateSemiprimes(12345L, 1);
         List<ValidationBenchmark.ParamConfig> configs = List.of(
-            new ValidationBenchmark.ParamConfig(240, 50, 10, 3, 0.85, 0.25, 0.45)
+            new ValidationBenchmark.ParamConfig(240, 50, 10, 3, 0.85, 0.08, 0.15)
         );
 
         // Run a minimal sweep (should complete quickly with small parameters)

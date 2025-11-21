@@ -30,7 +30,7 @@ The geometric resonance method transforms the factorization problem into a searc
    ```
    where J is the kernel order (default: 6).
 
-2. **Golden Ratio Sampling**: Quasi-random sequence generation using φ⁻¹ = (√5 - 1)/2 for uniform coverage of the parameter space k ∈ [0.25, 0.45].
+2. **Golden Ratio Sampling**: Quasi-random sequence generation using φ⁻¹ = (√5 - 1)/2 for uniform coverage of the parameter space k ∈ [0.08, 0.15].
 
 3. **Phase-Corrected Snapping**: Given ln(N) and phase θ, compute candidate factor:
    ```
@@ -47,7 +47,7 @@ Parameters:
   - m_span: 180
   - J: 6 (Dirichlet kernel order)
   - threshold: 0.92
-  - k_range: [0.25, 0.45]
+  - k_range: [0.08, 0.15]
 
 1. Initialize:
    - mc = MathContext(240 digits, HALF_EVEN)
@@ -179,8 +179,8 @@ geofac:
   m-span: 180         # Dirichlet kernel sweep range
   j: 6                # Kernel order
   threshold: 0.92     # Amplitude gate
-  k-lo: 0.25          # Lower k-bound
-  k-hi: 0.45          # Upper k-bound
+  k-lo: 0.08          # Lower k-bound
+  k-hi: 0.15          # Upper k-bound
 ```
 
 ## 4. Theoretical Context and Limits
@@ -245,7 +245,7 @@ To quantify the benefit of quasi-Monte Carlo sampling over pseudo-random number 
 - m_span = 180
 - J = 6
 - threshold = 0.92
-- k_range = [0.25, 0.45]
+- k_range = [0.08, 0.15]
 - seed = 42 (for PRN; QMC uses deterministic initialization)
 
 **Variable:**
@@ -423,8 +423,8 @@ geofac:
   m-span: 180           # Dirichlet kernel sweep half-width
   j: 6                  # Kernel order
   threshold: 0.92       # Normalized amplitude gate
-  k-lo: 0.25            # Lower k-bound (fractional)
-  k-hi: 0.45            # Upper k-bound (fractional)
+  k-lo: 0.08            # Lower k-bound (fractional)
+  k-hi: 0.15            # Upper k-bound (fractional)
   search-timeout-ms: 15000  # Maximum search time per attempt
 
 logging:

@@ -140,8 +140,8 @@ The core parameters for the Gate 3 (127-bit) challenge are set in `application.y
 | `m-span` | 180 | Half-width for Dirichlet kernel sweep |
 | `j` | 6 | Dirichlet kernel order |
 | `threshold` | 0.92 | Normalized amplitude gate |
-| `k-lo` | 0.25 | Lower bound for k-parameter sampling |
-| `k-hi` | 0.45 | Upper bound for k-parameter sampling |
+| `k-lo` | 0.08 | Lower bound for k-parameter sampling |
+| `k-hi` | 0.15 | Upper bound for k-parameter sampling |
 
 ## Verification Checklist
 

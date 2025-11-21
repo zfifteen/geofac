@@ -22,8 +22,8 @@ import static org.junit.jupiter.api.Assertions.*;
     "geofac.m-span=10",
     "geofac.j=6",
     "geofac.threshold=0.85",
-    "geofac.k-lo=0.20",
-    "geofac.k-hi=0.50",
+    "geofac.k-lo=0.08",
+    "geofac.k-hi=0.15",
     "geofac.search-timeout-ms=5000"
 })
 public class GateValidationTest {

@@ -11,8 +11,8 @@ geofac:
   m-span: 180
   j: 6
   threshold: 0.92
-  k-lo: 0.25
-  k-hi: 0.45
+  k-lo: 0.08
+  k-hi: 0.15
   search-timeout-ms: 600000
   # Expanding ring search configuration
   # search-radius-percentage: Percentage of pCenter to search (e.g., 0.012 = 1.2% for full error envelope)

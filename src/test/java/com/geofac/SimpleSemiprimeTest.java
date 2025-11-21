@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
     "geofac.m-span=600",
     "geofac.j=6",
     "geofac.threshold=0.7",
-    "geofac.k-lo=0.25",
-    "geofac.k-hi=0.45",
+    "geofac.k-lo=0.08",
+    "geofac.k-hi=0.15",
     "geofac.search-timeout-ms=600000"
 })
 public class SimpleSemiprimeTest {
