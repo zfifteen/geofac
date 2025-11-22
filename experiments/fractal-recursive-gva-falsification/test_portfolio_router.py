@@ -6,8 +6,12 @@ Tests the portfolio routing system for FR-GVA vs GVA method selection.
 """
 
 import sys
-sys.path.insert(0, '/home/runner/work/geofac/geofac')
-sys.path.insert(0, '/home/runner/work/geofac/geofac/experiments/fractal-recursive-gva-falsification')
+import os
+
+# Add parent directories to path for imports
+repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, repo_root)
+sys.path.insert(0, os.path.join(repo_root, 'experiments', 'fractal-recursive-gva-falsification'))
 
 from portfolio_router import (
     extract_structural_features,

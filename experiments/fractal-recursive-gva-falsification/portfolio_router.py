@@ -19,13 +19,27 @@ import mpmath as mp
 from typing import Dict, Tuple, Optional, Literal
 from math import log, e, sqrt
 import sys
+import os
 
-sys.path.insert(0, '/home/runner/work/geofac/geofac')
-sys.path.insert(0, '/home/runner/work/geofac/geofac/experiments/fractal-recursive-gva-falsification')
+# Add parent directories to path for imports
+repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, repo_root)
+sys.path.insert(0, os.path.join(repo_root, 'experiments', 'fractal-recursive-gva-falsification'))
+
 from fr_gva_implementation import compute_kappa
 
 
 MethodChoice = Literal["FR-GVA", "GVA"]
+
+# Routing algorithm parameters
+# These weights were empirically derived from PR #93 results analysis
+BIT_LENGTH_WEIGHT = 2.0  # Bit length is the strongest predictor (weighted 2x)
+KAPPA_WEIGHT = 1.0       # Kappa provides additional signal (weighted 1x)
+
+# Distance decay parameters for inverse distance scoring
+# Higher decay = more penalty for distance from average
+BIT_DECAY_RATE = 0.5     # Moderate decay for bit length differences
+KAPPA_DECAY_RATE = 2.0   # Stronger decay for kappa differences (more sensitive)
 
 
 def extract_structural_features(N: int, p: Optional[int] = None, q: Optional[int] = None) -> Dict:
@@ -245,34 +259,34 @@ def route_factorization(N: int, routing_rules: Dict, verbose: bool = False) -> M
     gva_score = 0.0
     fr_gva_score = 0.0
     
-    # Bit length proximity (weighted heavily)
+    # Bit length proximity (weighted heavily as primary predictor)
     if 'bit_threshold' in routing_rules:
         bit_diff_gva = abs(bit_length - routing_rules['bit_gva_avg'])
         bit_diff_fr_gva = abs(bit_length - routing_rules['bit_fr_gva_avg'])
         
         # Inverse distance scoring: closer = higher score
         # Use exponential decay to penalize distance
-        gva_bit_score = 1.0 / (1.0 + bit_diff_gva * 0.5)
-        fr_gva_bit_score = 1.0 / (1.0 + bit_diff_fr_gva * 0.5)
+        gva_bit_score = 1.0 / (1.0 + bit_diff_gva * BIT_DECAY_RATE)
+        fr_gva_bit_score = 1.0 / (1.0 + bit_diff_fr_gva * BIT_DECAY_RATE)
         
-        gva_score += gva_bit_score * 2.0  # Weight bit length heavily
-        fr_gva_score += fr_gva_bit_score * 2.0
+        gva_score += gva_bit_score * BIT_LENGTH_WEIGHT
+        fr_gva_score += fr_gva_bit_score * BIT_LENGTH_WEIGHT
         
         if verbose:
             print(f"  Bit length {bit_length}: GVA dist={bit_diff_gva:.1f} (score={gva_bit_score:.3f}), "
                   f"FR-GVA dist={bit_diff_fr_gva:.1f} (score={fr_gva_bit_score:.3f})")
     
-    # Kappa proximity (weighted moderately)
+    # Kappa proximity (secondary signal)
     if 'kappa_threshold' in routing_rules:
         kappa_diff_gva = abs(kappa - routing_rules['kappa_gva_avg'])
         kappa_diff_fr_gva = abs(kappa - routing_rules['kappa_fr_gva_avg'])
         
         # Inverse distance scoring with exponential decay
-        gva_kappa_score = 1.0 / (1.0 + kappa_diff_gva * 2.0)
-        fr_gva_kappa_score = 1.0 / (1.0 + kappa_diff_fr_gva * 2.0)
+        gva_kappa_score = 1.0 / (1.0 + kappa_diff_gva * KAPPA_DECAY_RATE)
+        fr_gva_kappa_score = 1.0 / (1.0 + kappa_diff_fr_gva * KAPPA_DECAY_RATE)
         
-        gva_score += gva_kappa_score * 1.0
-        fr_gva_score += fr_gva_kappa_score * 1.0
+        gva_score += gva_kappa_score * KAPPA_WEIGHT
+        fr_gva_score += fr_gva_kappa_score * KAPPA_WEIGHT
         
         if verbose:
             print(f"  Kappa {kappa:.6f}: GVA dist={kappa_diff_gva:.6f} (score={gva_kappa_score:.3f}), "

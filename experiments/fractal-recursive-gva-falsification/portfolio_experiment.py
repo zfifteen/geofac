@@ -13,11 +13,14 @@ The router analyzes structural features to predict which method is likely to wor
 """
 
 import sys
+import os
 import time
 from typing import Dict, Optional, Tuple, List
 
-sys.path.insert(0, '/home/runner/work/geofac/geofac')
-sys.path.insert(0, '/home/runner/work/geofac/geofac/experiments/fractal-recursive-gva-falsification')
+# Add parent directories to path for imports
+repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, repo_root)
+sys.path.insert(0, os.path.join(repo_root, 'experiments', 'fractal-recursive-gva-falsification'))
 
 import mpmath as mp
 from gva_factorization import gva_factor_search
