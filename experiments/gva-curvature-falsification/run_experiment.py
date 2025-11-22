@@ -10,11 +10,11 @@ Everything else (shell, N, k-values, precision) kept identical for controlled co
 """
 
 import mpmath as mp
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple
 import time
 import json
 from datetime import datetime
-from math import sqrt as math_sqrt, log
+
 import statistics
 
 # Configure high precision
