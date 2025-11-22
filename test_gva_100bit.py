@@ -9,8 +9,8 @@ from gva_factorization import gva_factor_search
 import time
 
 # Test cases: 100-bit semiprimes
-# Generated using primes near 2^49.5
-# p = 796131459065743 (prime near sqrt(2^100))
+# Generated using primes near 2^49.5 (≈ sqrt(2^99))
+# p = 796131459065743 (prime near 2^49.5)
 # q = 796131459065797 (next prime after p)
 TEST_CASES_100BIT = [
     {
