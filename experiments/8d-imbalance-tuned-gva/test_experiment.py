@@ -35,15 +35,15 @@ TEST_CASES = [
         'category': 'balanced'
     },
     {
-        'name': 'Slightly unbalanced 48-bit (ln(q/p) ≈ 0.1)',
-        'N': 177841110036541,  # Unbalanced by ~10%
+        'name': 'Moderately unbalanced 48-bit (ln(q/p) ≈ 0.58)',
+        'N': 177841110036541,  # Unbalanced by ~78%
         'p': 10000019,
         'q': 17783087,  # ≈ 1.78× larger
-        'expected_r': log(17783087 / 10000019),  # ≈ 0.575
+        'expected_r': log(17783087 / 10000019),  # ≈ 0.576
         'category': 'moderately_unbalanced'
     },
     {
-        'name': 'Moderately unbalanced 50-bit (ln(q/p) ≈ 0.2)',
+        'name': 'Highly unbalanced 50-bit (ln(q/p) ≈ 1.39)',
         'N': 399999996000001,
         'p': 9999999,
         'q': 40000001,  # 4× larger
@@ -256,8 +256,11 @@ def run_all_tests(method='both', verbose=False):
         
         if success_8d_unbal > success_7d_unbal:
             print("\n✅ HYPOTHESIS SUPPORTED: 8D shows improvement on unbalanced cases")
+        elif success_8d_unbal == success_7d_unbal and success_8d_unbal == 0:
+            print("\n❌ HYPOTHESIS FALSIFIED: Both methods fail equally on unbalanced cases")
+            print("   (8D provides no improvement despite 50× computational overhead)")
         elif success_8d_unbal == success_7d_unbal:
-            print("\n⚠️  HYPOTHESIS UNCLEAR: 8D and 7D perform equally")
+            print("\n⚠️  HYPOTHESIS UNCLEAR: 8D and 7D perform equally (both have some success)")
         else:
             print("\n❌ HYPOTHESIS FALSIFIED: 8D does not improve unbalanced factorization")
     else:

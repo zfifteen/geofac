@@ -25,10 +25,10 @@ Result: ❌ FAILED (no factors found)
 
 [8D GVA - Imbalance-Tuned]
 Result: ❌ FAILED (no factors found)
-  Time: 126.259s
+  Time: 126.449s
 
 ======================================================================
-Test: Slightly unbalanced 48-bit (ln(q/p) ≈ 0.1)
+Test: Moderately unbalanced 48-bit (ln(q/p) ≈ 0.58)
 N = 177841110036541
 Bit length: 48
 Expected factors: 10000019 × 17783087
@@ -37,14 +37,14 @@ Expected imbalance r = ln(q/p) ≈ 0.575661
 
 [7D GVA - Standard]
 Result: ❌ FAILED (no factors found)
-  Time: 0.003s
+  Time: 0.004s
 
 [8D GVA - Imbalance-Tuned]
 Result: ❌ FAILED (no factors found)
-  Time: 127.530s
+  Time: 128.250s
 
 ======================================================================
-Test: Moderately unbalanced 50-bit (ln(q/p) ≈ 0.2)
+Test: Highly unbalanced 50-bit (ln(q/p) ≈ 1.39)
 N = 399999996000001
 Bit length: 49
 Expected factors: 9999999 × 40000001
@@ -53,11 +53,11 @@ Expected imbalance r = ln(q/p) ≈ 1.386294
 
 [7D GVA - Standard]
 Result: ❌ FAILED (no factors found)
-  Time: 0.740s
+  Time: 0.741s
 
 [8D GVA - Imbalance-Tuned]
 Result: ❌ FAILED (no factors found)
-  Time: 129.244s
+  Time: 128.806s
 
 ======================================================================
 Test: Gate 1 (30-bit balanced)
@@ -70,7 +70,7 @@ Expected imbalance r = ln(q/p) ≈ 0.000672
 [7D GVA - Standard]
 Result: ✅ SUCCESS
   Found: 32749 × 32771
-  Time: 0.240s
+  Time: 0.242s
 
 [8D GVA - Imbalance-Tuned]
 Result: ✅ SUCCESS
@@ -84,8 +84,8 @@ SUMMARY RESULTS
 Test Case                                      7D       8D
 ----------------------------------------------------------------------
 Balanced 47-bit (ln(q/p) ≈ 0)              ❌ FAIL   ❌ FAIL
-Slightly unbalanced 48-bit (ln(q/p) ≈      ❌ FAIL   ❌ FAIL
-Moderately unbalanced 50-bit (ln(q/p)      ❌ FAIL   ❌ FAIL
+Moderately unbalanced 48-bit (ln(q/p)      ❌ FAIL   ❌ FAIL
+Highly unbalanced 50-bit (ln(q/p) ≈ 1.     ❌ FAIL   ❌ FAIL
 Gate 1 (30-bit balanced)                   ✅ PASS   ✅ PASS
 
 ======================================================================
@@ -112,4 +112,5 @@ Unbalanced cases (n=2):
   7D success: 0/2
   8D success: 0/2
 
-⚠️  HYPOTHESIS UNCLEAR: 8D and 7D perform equally
+❌ HYPOTHESIS FALSIFIED: Both methods fail equally on unbalanced cases
+   (8D provides no improvement despite 50× computational overhead)

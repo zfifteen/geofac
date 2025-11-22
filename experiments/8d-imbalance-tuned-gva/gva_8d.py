@@ -34,7 +34,7 @@ RANGE_MAX = 10**18
 
 
 def adaptive_precision(N: int) -> int:
-    """Compute adaptive precision: max(50, N.bitLength() × 4 + 200)"""
+    """Compute adaptive precision: max(50, N.bit_length() × 4 + 200)"""
     bit_length = N.bit_length()
     return max(50, bit_length * 4 + 200)
 
