@@ -71,15 +71,17 @@ def build_training_data() -> List[Dict]:
 
 
 def run_with_router(N: int, label: str, expected_p: int, expected_q: int,
-                   routing_rules: Dict, verbose: bool = True) -> Dict:
+                   routing_rules: Dict, use_fallback: bool = True, 
+                   verbose: bool = True) -> Dict:
     """
-    Factor N using router to select method.
+    Factor N using router to select method, with optional fallback.
     
     Args:
         N: Semiprime to factor
         label: Human-readable label
         expected_p, expected_q: Expected factors (for verification)
         routing_rules: Routing rules from correlation analysis
+        use_fallback: If True, try other method if first choice fails
         verbose: Enable detailed logging
         
     Returns:
@@ -112,14 +114,63 @@ def run_with_router(N: int, label: str, expected_p: int, expected_q: int,
     
     result['chosen_method'] = chosen_method
     result['features'] = features
+    result['attempts'] = []
     
-    # Execute chosen method
-    print(f"\nExecuting {chosen_method}...")
+    # Try chosen method first
+    first_result = _try_method(N, chosen_method, expected_p, expected_q, verbose)
+    result['attempts'].append(first_result)
+    
+    # Check if successful
+    if first_result['success']:
+        result.update(first_result)
+        return result
+    
+    # Fallback to other method if enabled
+    if use_fallback:
+        other_method = "GVA" if chosen_method == "FR-GVA" else "FR-GVA"
+        print(f"\n  → First choice failed, trying fallback: {other_method}")
+        
+        second_result = _try_method(N, other_method, expected_p, expected_q, verbose)
+        result['attempts'].append(second_result)
+        result['used_fallback'] = True
+        result['fallback_method'] = other_method
+        
+        if second_result['success']:
+            result.update(second_result)
+            result['success_method'] = other_method
+        else:
+            result.update(second_result)
+            result['success_method'] = None
+    else:
+        result.update(first_result)
+        result['used_fallback'] = False
+        result['success_method'] = chosen_method if first_result['success'] else None
+    
+    return result
+
+
+def _try_method(N: int, method: MethodChoice, expected_p: int, expected_q: int,
+                verbose: bool = False) -> Dict:
+    """
+    Try factoring N with specified method.
+    
+    Args:
+        N: Semiprime to factor
+        method: "FR-GVA" or "GVA"
+        expected_p, expected_q: Expected factors (for verification)
+        verbose: Enable detailed logging
+        
+    Returns:
+        Result dictionary
+    """
+    result = {'method': method}
+    
+    print(f"\nExecuting {method}...")
     
     try:
         start_time = time.time()
         
-        if chosen_method == "FR-GVA":
+        if method == "FR-GVA":
             factors = fr_gva_factor_search(
                 N, max_depth=5, kappa_threshold=0.525,
                 max_candidates=50000, verbose=False, allow_any_range=True
@@ -174,29 +225,40 @@ def print_portfolio_summary(results: List[Dict], analysis: Dict):
     
     total = len(results)
     successful = sum(1 for r in results if r.get('success', False))
+    used_fallback = sum(1 for r in results if r.get('used_fallback', False))
     
     print(f"\nTest Cases: {total}")
     print(f"Portfolio Success Rate: {successful}/{total} ({100*successful/total:.0f}%)")
+    
+    if used_fallback > 0:
+        print(f"Fallback used: {used_fallback} cases")
+        fallback_successes = sum(1 for r in results 
+                                if r.get('used_fallback') and r.get('success'))
+        print(f"  Fallback successful: {fallback_successes}/{used_fallback}")
     
     # Breakdown by chosen method
     gva_chosen = [r for r in results if r.get('chosen_method') == 'GVA']
     fr_gva_chosen = [r for r in results if r.get('chosen_method') == 'FR-GVA']
     
-    gva_success = sum(1 for r in gva_chosen if r.get('success', False))
-    fr_gva_success = sum(1 for r in fr_gva_chosen if r.get('success', False))
+    gva_direct_success = sum(1 for r in gva_chosen 
+                             if r.get('success') and not r.get('used_fallback'))
+    fr_gva_direct_success = sum(1 for r in fr_gva_chosen 
+                                if r.get('success') and not r.get('used_fallback'))
     
     print(f"\nRouting Decisions:")
-    print(f"  GVA chosen: {len(gva_chosen)} cases, {gva_success} successful")
-    print(f"  FR-GVA chosen: {len(fr_gva_chosen)} cases, {fr_gva_success} successful")
+    print(f"  GVA chosen: {len(gva_chosen)} cases, {gva_direct_success} direct successes")
+    print(f"  FR-GVA chosen: {len(fr_gva_chosen)} cases, {fr_gva_direct_success} direct successes")
     
     # Compare to individual methods (from training data)
     print(f"\nComparison to Individual Methods:")
     print(f"  Standard GVA alone: 3/6 (50%) [from PR #93]")
     print(f"  FR-GVA alone: 3/6 (50%) [from PR #93]")
-    print(f"  Portfolio Router: {successful}/6 ({100*successful/total:.0f}%)")
+    print(f"  Portfolio Router (no fallback): {gva_direct_success + fr_gva_direct_success}/6 ({100*(gva_direct_success + fr_gva_direct_success)/6:.0f}%)")
+    print(f"  Portfolio Router (with fallback): {successful}/6 ({100*successful/total:.0f}%)")
     
     if successful > 3:
-        print(f"\n✓ IMPROVEMENT: Router achieves {successful-3} additional success(es)")
+        improvement = successful - 3
+        print(f"\n✓ IMPROVEMENT: Router achieves {improvement} additional success(es)")
     elif successful == 3:
         print(f"\n⚠ NEUTRAL: Router matches best individual method")
     else:
@@ -248,7 +310,8 @@ def main():
     print("\nApproach:")
     print("  1. Analyze PR #93 results to identify feature correlations")
     print("  2. Build router that selects FR-GVA vs GVA based on features")
-    print("  3. Compare portfolio success rate to individual methods")
+    print("  3. Use fallback: if first choice fails, try other method")
+    print("  4. Compare portfolio success rate to individual methods")
     print("\n" + "="*70)
     
     # Phase 1: Build training data and analyze correlations
@@ -261,14 +324,15 @@ def main():
     print(f"  FR-GVA successes: {sum(1 for d in training_data if d['fr_gva_success'])}")
     print(f"  Routing strategy: {analysis['routing_rules'].get('strategy')}")
     
-    # Phase 2: Test portfolio approach on same test cases
-    print(f"\n[Phase 2] Running portfolio factorization with router...")
+    # Phase 2: Test portfolio approach with fallback
+    print(f"\n[Phase 2] Running portfolio factorization with router + fallback...")
     
     test_cases = generate_test_semiprimes()
     results = []
     
     for N, label, p, q in test_cases:
-        result = run_with_router(N, label, p, q, analysis['routing_rules'], verbose=True)
+        result = run_with_router(N, label, p, q, analysis['routing_rules'], 
+                                use_fallback=True, verbose=True)
         results.append(result)
     
     # Phase 3: Summary and analysis
