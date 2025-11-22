@@ -1,0 +1,115 @@
+
+======================================================================
+8D IMBALANCE-TUNED GVA: HYPOTHESIS FALSIFICATION EXPERIMENT
+======================================================================
+
+Hypothesis: Adding 8th dimension for imbalance tuning improves
+factorization of unbalanced semiprimes (ln(q/p) > 0.1)
+
+Test strategy:
+  - Balanced cases: both methods should work
+  - Unbalanced cases: 8D should show advantage IF hypothesis holds
+======================================================================
+
+======================================================================
+Test: Balanced 47-bit (ln(q/p) ≈ 0)
+N = 100000001506523
+Bit length: 47
+Expected factors: 9999991 × 10000061
+Expected imbalance r = ln(q/p) ≈ 0.000007
+======================================================================
+
+[7D GVA - Standard]
+Result: ❌ FAILED (no factors found)
+  Time: 0.006s
+
+[8D GVA - Imbalance-Tuned]
+Result: ❌ FAILED (no factors found)
+  Time: 126.259s
+
+======================================================================
+Test: Slightly unbalanced 48-bit (ln(q/p) ≈ 0.1)
+N = 177841110036541
+Bit length: 48
+Expected factors: 10000019 × 17783087
+Expected imbalance r = ln(q/p) ≈ 0.575661
+======================================================================
+
+[7D GVA - Standard]
+Result: ❌ FAILED (no factors found)
+  Time: 0.003s
+
+[8D GVA - Imbalance-Tuned]
+Result: ❌ FAILED (no factors found)
+  Time: 127.530s
+
+======================================================================
+Test: Moderately unbalanced 50-bit (ln(q/p) ≈ 0.2)
+N = 399999996000001
+Bit length: 49
+Expected factors: 9999999 × 40000001
+Expected imbalance r = ln(q/p) ≈ 1.386294
+======================================================================
+
+[7D GVA - Standard]
+Result: ❌ FAILED (no factors found)
+  Time: 0.740s
+
+[8D GVA - Imbalance-Tuned]
+Result: ❌ FAILED (no factors found)
+  Time: 129.244s
+
+======================================================================
+Test: Gate 1 (30-bit balanced)
+N = 1073217479
+Bit length: 30
+Expected factors: 32749 × 32771
+Expected imbalance r = ln(q/p) ≈ 0.000672
+======================================================================
+
+[7D GVA - Standard]
+Result: ✅ SUCCESS
+  Found: 32749 × 32771
+  Time: 0.240s
+
+[8D GVA - Imbalance-Tuned]
+Result: ✅ SUCCESS
+  Found: 32749 × 32771
+  Time: 0.025s
+
+======================================================================
+SUMMARY RESULTS
+======================================================================
+
+Test Case                                      7D       8D
+----------------------------------------------------------------------
+Balanced 47-bit (ln(q/p) ≈ 0)              ❌ FAIL   ❌ FAIL
+Slightly unbalanced 48-bit (ln(q/p) ≈      ❌ FAIL   ❌ FAIL
+Moderately unbalanced 50-bit (ln(q/p)      ❌ FAIL   ❌ FAIL
+Gate 1 (30-bit balanced)                   ✅ PASS   ✅ PASS
+
+======================================================================
+CATEGORY ANALYSIS
+======================================================================
+
+BALANCED:
+  7D GVA: 1/2 (50%)
+  8D GVA: 1/2 (50%)
+
+MODERATELY UNBALANCED:
+  7D GVA: 0/1 (0%)
+  8D GVA: 0/1 (0%)
+
+HIGHLY UNBALANCED:
+  7D GVA: 0/1 (0%)
+  8D GVA: 0/1 (0%)
+
+======================================================================
+HYPOTHESIS VERDICT
+======================================================================
+
+Unbalanced cases (n=2):
+  7D success: 0/2
+  8D success: 0/2
+
+⚠️  HYPOTHESIS UNCLEAR: 8D and 7D perform equally
