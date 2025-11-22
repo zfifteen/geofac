@@ -1,0 +1,58 @@
+{
+  "test_case": {
+    "N": "1296000000000003744000000000001183",
+    "bit_length": 110,
+    "expected_p": 36000000000000013,
+    "expected_q": 36000000000000091
+  },
+  "results": {
+    "baseline": {
+      "success": true,
+      "factors": [
+        36000000000000013,
+        36000000000000091
+      ],
+      "runtime": 4.064865589141846,
+      "candidates_tested": 50000,
+      "coverage": 100.0,
+      "method": "baseline_gva",
+      "k_values": [
+        0.3,
+        0.35,
+        0.4
+      ]
+    },
+    "two_stage": {
+      "success": false,
+      "factors": null,
+      "runtime": 4.537675142288208,
+      "stage1_time": 4.50612998008728,
+      "stage2_time": 0.028844594955444336,
+      "stage1_samples": 1600,
+      "stage2_tested": 50000,
+      "total_candidates": 51600,
+      "coverage": 50.0,
+      "method": "two_stage_gva",
+      "segments": 32,
+      "top_k": 16
+    },
+    "three_stage": {
+      "success": false,
+      "factors": null,
+      "runtime": 3.401885509490967,
+      "stage1_time": 1.1208593845367432,
+      "stage2_time": 2.2492880821228027,
+      "stage3_time": 0.02896261215209961,
+      "stage1_samples": 400,
+      "stage2_samples": 800,
+      "stage3_tested": 50000,
+      "total_candidates": 51200,
+      "coverage": 25.0,
+      "method": "three_stage_gva",
+      "early_exited": false,
+      "max_score_stage2": 1.6834050439222203
+    }
+  },
+  "verdict": "FALSIFIED_CORRECTNESS",
+  "timestamp": "2025-11-22 17:03:01"
+}

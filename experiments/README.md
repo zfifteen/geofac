@@ -28,6 +28,18 @@ This directory contains research experiments for the geofac geometric resonance 
 
 ---
 
+### [deeper-recursion-hypothesis/](deeper-recursion-hypothesis/)
+
+**Status**: Complete - Hypothesis decisively falsified
+
+**Objective**: Test whether 3-stage recursion with dynamic thresholds can reduce runtime below baseline on 110-bit semiprimes while maintaining factor recovery
+
+**Key Finding**: Hypothesis falsified. 3-stage achieved 1.19× speedup (3.40s vs 4.07s) but failed to recover factors. Multi-stage uniform segmentation is fundamentally incompatible with ultra-localized geodesic signals - adaptive sampling near √N is a necessity, not an optimization.
+
+**Start here**: [deeper-recursion-hypothesis/INDEX.md](deeper-recursion-hypothesis/INDEX.md)
+
+---
+
 ### [weyl-law-remainder-oscillations/](weyl-law-remainder-oscillations/)
 
 **Status**: (Pre-existing experiment)
