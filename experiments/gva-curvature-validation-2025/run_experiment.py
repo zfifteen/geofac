@@ -150,22 +150,19 @@ def compute_curvature(
     return curvature, A_minus, A_center, A_plus
 
 
-def compute_null_model_distance(shell_width: int, factor_p_offset: int, factor_q_offset: int) -> float:
+def compute_null_model_distance(shell_width: int) -> float:
     """
     Compute expected mean distance to nearest factor for uniform distribution.
     
-    For a uniform distribution over width W with two point targets at positions
-    p and q, the expected distance to the nearest target is:
+    For a uniform distribution over width W with two point targets,
+    the expected distance to the nearest target is:
     
     E[dist] ≈ W / (2 * num_targets + 1)
     
-    For two targets (p and q), this gives W / 5.
-    A more precise calculation integrates over the shell.
+    For two targets, this gives W / 5.
     
     Args:
         shell_width: Width of sampling region
-        factor_p_offset: Position of factor p (as offset from sqrt_N)
-        factor_q_offset: Position of factor q (as offset from sqrt_N)
         
     Returns:
         Expected mean distance for null model
@@ -316,9 +313,7 @@ def sample_shell_curvature(
             })
         
         # Compute null model and actual peak statistics
-        null_model_mean = compute_null_model_distance(
-            width, metrics["factor_p_offset"], metrics["factor_q_offset"]
-        )
+        null_model_mean = compute_null_model_distance(width)
         
         if distances_to_factors:
             actual_mean_distance = statistics.mean(distances_to_factors)
