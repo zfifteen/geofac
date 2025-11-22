@@ -187,8 +187,12 @@ def gva_factor_search(N: int, k_values: Optional[List[float]] = None,
             base_window = max(400000, sqrt_N // 300)
         elif bit_length <= 109:  # 105-109 bits
             base_window = max(500000, sqrt_N // 250)
-        else:  # 110+ bits
+        elif bit_length <= 134:  # 110-134 bits
             base_window = max(600000, sqrt_N // 200)
+        elif bit_length <= 144:  # 135-144 bits
+            base_window = max(700000, sqrt_N // 180)
+        else:  # 145+ bits
+            base_window = max(800000, sqrt_N // 160)
         
         if verbose:
             print(f"Search window: ±{base_window} around sqrt(N) = {sqrt_N}")
