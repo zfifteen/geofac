@@ -97,7 +97,7 @@ SMALL_PRIMES = [
 ]
 
 
-def is_valid_candidate(candidate: int, N: int, sqrt_N: int) -> bool:
+def is_valid_candidate(candidate: int, N: int, sqrt_N: int, n_prime_factors: set = None) -> bool:
     """
     Hard prefilter for candidate validity.
     
@@ -110,6 +110,7 @@ def is_valid_candidate(candidate: int, N: int, sqrt_N: int) -> bool:
         candidate: Candidate factor to validate
         N: Semiprime to factor
         sqrt_N: Integer square root of N
+        n_prime_factors: Pre-computed set of small primes that divide N (optional)
         
     Returns:
         True if candidate passes all prefilters, False otherwise
@@ -123,11 +124,15 @@ def is_valid_candidate(candidate: int, N: int, sqrt_N: int) -> bool:
         return False
     
     # Small prime divisibility check (skip if N has that prime factor)
+    # Use pre-computed set if available for efficiency
+    if n_prime_factors is None:
+        n_prime_factors = {p for p in SMALL_PRIMES if N % p == 0}
+    
     for prime in SMALL_PRIMES:
         if prime >= candidate:
             break
         # Skip if N is divisible by this prime (candidate might be this prime)
-        if N % prime == 0:
+        if prime in n_prime_factors:
             continue
         # Reject if candidate is divisible by small prime
         if candidate % prime == 0:
@@ -137,7 +142,7 @@ def is_valid_candidate(candidate: int, N: int, sqrt_N: int) -> bool:
     # For balanced semiprimes, factors are near sqrt(N)
     # Allow up to 10x deviation for unbalanced cases
     max_deviation = max(sqrt_N // DEVIATION_DIVISOR, MIN_DEVIATION)
-    if abs(candidate - sqrt_N) > max_deviation and candidate < sqrt_N:
+    if abs(candidate - sqrt_N) > max_deviation:
         return False
     
     return True
@@ -245,6 +250,9 @@ def recursive_window_subdivision(N: int, window_start: int, window_end: int,
     kappa = compute_kappa(N)
     sqrt_N = int(mp.sqrt(N))
     
+    # Pre-compute small primes that divide N (optimization)
+    n_prime_factors = {p for p in SMALL_PRIMES if N % p == 0}
+    
     if kappa > kappa_threshold:
         if verbose:
             print(f"  Depth {depth}: κ={kappa:.4f} > threshold, using segment-based search")
@@ -290,8 +298,8 @@ def recursive_window_subdivision(N: int, window_start: int, window_end: int,
             stride = max((seg_end - seg_start) // STRIDE_DIVISOR, 1)
             
             for candidate in range(seg_start, seg_end, stride):
-                # Apply hard prefilters
-                if not is_valid_candidate(candidate, N, sqrt_N):
+                # Apply hard prefilters (pass pre-computed n_prime_factors)
+                if not is_valid_candidate(candidate, N, sqrt_N, n_prime_factors):
                     continue
                 
                 metrics['candidates_tested'] += 1
