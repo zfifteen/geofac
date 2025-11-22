@@ -84,7 +84,14 @@ def get_z5d_density_weight(delta: int, density_map: Dict[int, float],
         return 1.0  # Uniform if no Z5D data
     
     # Find corresponding bin
-    bin_center = (delta // bin_width) * bin_width
+    # Use floor division to get bin index, then multiply back
+    # For bin_width=1000: delta=-1500 -> bin_idx=-2 -> bin_center=-2000
+    #                     delta=-500  -> bin_idx=-1 -> bin_center=-1000
+    #                     delta=500   -> bin_idx=0  -> bin_center=0
+    #                     delta=1500  -> bin_idx=1  -> bin_center=1000
+    from math import floor
+    bin_idx = floor(delta / bin_width)
+    bin_center = bin_idx * bin_width
     
     # Get density (default to mean if bin not in map)
     if bin_center in density_map:
@@ -256,8 +263,9 @@ def z5d_enhanced_fr_gva(N: int,
             # Compute Z5D density weight
             z5d_weight = get_z5d_density_weight(delta, density_map)
             
-            # Combined score: α × (1 - distance) + β × z5d_weight
-            # We want to maximize score, so invert distance
+            # Combined score: α × fractal_score + β × z5d_weight
+            # Fractal score: inverse distance (smaller distance = higher score)
+            # Add 1 to avoid division by zero for distance=0
             fractal_score = 1.0 / (1.0 + float(distance))
             combined_score = fractal_score + z5d_weight_beta * z5d_weight
             

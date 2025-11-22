@@ -374,7 +374,13 @@ def main():
     print("  3. Z5D prior only")
     print("  4. Full Z5D (all enhancements)")
     print()
-    input("Press Enter to start experiments...")
+    
+    # Check for non-interactive mode
+    import os
+    if os.environ.get('CI') or os.environ.get('NON_INTERACTIVE'):
+        print("Running in non-interactive mode...")
+    else:
+        input("Press Enter to start experiments...")
     print()
     
     # Reduced budget for faster testing

@@ -45,6 +45,15 @@ def isqrt(n):
     return x
 
 
+# Simulation parameters
+VARIATION_FREQ_1 = 10000.0
+VARIATION_FREQ_2 = 5000.0
+VARIATION_FREQ_3 = 2000.0
+VARIATION_AMP_1 = 0.15
+VARIATION_AMP_2 = 0.10
+VARIATION_AMP_3 = 0.05
+
+
 def simulate_z5d_density(sqrt_N: int, 
                          window: int = 1000000,
                          bin_width: int = 1000,
@@ -82,9 +91,9 @@ def simulate_z5d_density(sqrt_N: int,
         # Add realistic variations using multiple frequencies
         # This simulates the observed clustering in actual prime distributions
         variation = 1.0
-        variation += 0.15 * sin(bin_center / 10000.0 + seed)
-        variation += 0.10 * cos(bin_center / 5000.0 + seed * 2)
-        variation += 0.05 * sin(bin_center / 2000.0 + seed * 3)
+        variation += VARIATION_AMP_1 * sin(bin_center / VARIATION_FREQ_1 + seed)
+        variation += VARIATION_AMP_2 * cos(bin_center / VARIATION_FREQ_2 + seed * 2)
+        variation += VARIATION_AMP_3 * sin(bin_center / VARIATION_FREQ_3 + seed * 3)
         
         # Clamp to reasonable range (±30% of base)
         variation = max(0.7, min(1.3, variation))

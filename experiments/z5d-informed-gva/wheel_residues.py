@@ -136,28 +136,30 @@ def count_admissible_in_range(start: int, end: int) -> int:
     if start > end:
         return 0
     
-    # Number of complete cycles
-    span = end - start + 1
-    full_cycles = span // WHEEL_MODULUS
+    # Check if start and end are in same cycle
+    start_cycle = start // WHEEL_MODULUS
+    end_cycle = end // WHEEL_MODULUS
     
-    # Count in full cycles
+    if start_cycle == end_cycle:
+        # Single partial cycle
+        start_residue = start % WHEEL_MODULUS
+        end_residue = end % WHEEL_MODULUS
+        count = sum(1 for r in WHEEL_210_RESIDUES if start_residue <= r <= end_residue)
+        return count
+    
+    # Multiple cycles: count full cycles + partial ends
+    full_cycles = end_cycle - start_cycle - 1
     count = full_cycles * WHEEL_SIZE
     
-    # Handle partial cycle at start
+    # Add partial cycle at start (from start_residue to end of cycle)
     start_residue = start % WHEEL_MODULUS
     start_in_cycle = sum(1 for r in WHEEL_210_RESIDUES if r >= start_residue)
+    count += start_in_cycle
     
-    # Handle partial cycle at end
+    # Add partial cycle at end (from start of cycle to end_residue)
     end_residue = end % WHEEL_MODULUS
     end_in_cycle = sum(1 for r in WHEEL_210_RESIDUES if r <= end_residue)
-    
-    # Adjust for partial cycles
-    if full_cycles > 0:
-        # We over-counted: remove full cycle and add partial ends
-        count = count - WHEEL_SIZE + start_in_cycle + end_in_cycle
-    else:
-        # Single partial cycle
-        count = sum(1 for r in WHEEL_210_RESIDUES if start_residue <= r <= end_residue)
+    count += end_in_cycle
     
     return count
 
