@@ -56,13 +56,17 @@ If no factors are found within the configured budget, the run exits cleanly. No 
 
 | Property | Default | Description |
 | --- | --- | --- |
+| `enable-scale-adaptive` | `true` | **NEW**: Automatically tune parameters based on N's bit-length using empirical scaling laws (Z5D insights). |
+| `scale-adaptive-attenuation` | `0.05` | Threshold attenuation factor for scale-adaptive mode. |
 | `precision` | `240` | Minimum decimal digits for the BigDecimal math context (auto-raised with input size). |
-| `samples` | `3000` | Number of k-samples explored per attempt. |
-| `m-span` | `180` | Half-width for the Dirichlet kernel sweep over `m`. |
+| `samples` | `3000` | Number of k-samples explored per attempt (base value, scaled adaptively if enabled). |
+| `m-span` | `180` | Half-width for the Dirichlet kernel sweep over `m` (base value, scaled adaptively if enabled). |
 | `j` | `6` | Dirichlet kernel order. |
-| `threshold` | `0.92` | Normalized amplitude gate before evaluating a candidate. |
-| `k-lo`, `k-hi` | `0.25`, `0.45` | Fractional k-sampling range. |
-| `search-timeout-ms` | `600000` | Max time per attempt; on timeout the command exits (no fallback). |
+| `threshold` | `0.92` | Normalized amplitude gate before evaluating a candidate (base value, scaled adaptively if enabled). |
+| `k-lo`, `k-hi` | `0.25`, `0.45` | Fractional k-sampling range (base values, adjusted adaptively if enabled). |
+| `search-timeout-ms` | `600000` | Max time per attempt; on timeout the command exits (base value, scaled adaptively if enabled). |
+
+**Scale-Adaptive Mode** (enabled by default): Implements empirical scaling laws based on Z5D Prime Predictor research. Parameters automatically adapt to N's bit-length, recognizing that number-theoretic patterns exhibit scale-dependent (not scale-invariant) behavior. See `docs/SCALE_ADAPTIVE_TUNING.md` for details.
 
 Override via Spring config (profiles, env vars, command-line args) as needed.
 
@@ -143,6 +147,8 @@ Comprehensive documentation is available in the `docs/` directory:
 - **[VERIFICATION.md](docs/VERIFICATION.md)** — Detailed verification appendix: exact N, p, q, artifact locations, reproduction instructions, and configuration parameters
 - **[QMC_METHODS.md](docs/QMC_METHODS.md)** — Quasi-Monte Carlo methods: golden ratio sampling, Sobol sequences, variance reduction theory, and practical comparison
 - **[THEORY.md](docs/THEORY.md)** — Theoretical foundations: complexity theory (Time Hierarchy, Rice's theorem), physical limits (Margolus-Levitin, Bremermann), and decidability constraints
+- **[SCALE_ADAPTIVE_TUNING.md](docs/SCALE_ADAPTIVE_TUNING.md)** — Scale-adaptive parameter tuning: empirical scaling laws, Z5D insights, and implementation for the 127-bit challenge
+- **[Z5D_INSIGHTS_CONCLUSION.md](docs/Z5D_INSIGHTS_CONCLUSION.md)** — Executive summary: how Z5D Prime Predictor research applies to breaking the 127-bit barrier
 
 These documents provide verifiable artifacts, reproducibility notes, and links to canonical theoretical sources.
 
