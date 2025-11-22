@@ -23,6 +23,7 @@ import mpmath as mp
 from math import log, sqrt, isqrt
 from typing import List, Tuple, Dict
 import csv
+import random
 
 # Configure precision
 mp.mp.dps = 100
@@ -152,7 +153,6 @@ def miller_rabin(n: int, k: int = 20) -> bool:
         d //= 2
     
     # Witness loop
-    import random
     random.seed(42)  # Deterministic for reproducibility
     
     for _ in range(k):

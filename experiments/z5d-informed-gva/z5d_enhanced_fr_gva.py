@@ -16,7 +16,7 @@ factorization performance on the 127-bit challenge.
 import mpmath as mp
 from typing import List, Tuple, Optional, Dict
 import time
-from math import log, sqrt, isqrt
+from math import log, sqrt, isqrt, floor
 import csv
 import os
 
@@ -83,13 +83,11 @@ def get_z5d_density_weight(delta: int, density_map: Dict[int, float],
     if not density_map:
         return 1.0  # Uniform if no Z5D data
     
-    # Find corresponding bin
-    # Use floor division to get bin index, then multiply back
+    # Find corresponding bin using floor division
     # For bin_width=1000: delta=-1500 -> bin_idx=-2 -> bin_center=-2000
     #                     delta=-500  -> bin_idx=-1 -> bin_center=-1000
     #                     delta=500   -> bin_idx=0  -> bin_center=0
     #                     delta=1500  -> bin_idx=1  -> bin_center=1000
-    from math import floor
     bin_idx = floor(delta / bin_width)
     bin_center = bin_idx * bin_width
     
