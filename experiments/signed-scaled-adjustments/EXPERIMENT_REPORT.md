@@ -31,7 +31,7 @@
 ```
 
 **Characteristics**:
-- All in operational range [10^14, 10^18] (9 of 10; one slightly below but included)
+- All in operational range [10^14, 10^18]
 - Balanced: gaps range from 102 to 8536 (all p ≈ q)
 - Mix of very close (gap ~100) and moderately close (gap ~5000)
 
