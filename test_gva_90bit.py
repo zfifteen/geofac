@@ -5,7 +5,7 @@ This test extends GVA capability from 80-bit to 90+ bit semiprimes,
 demonstrating continued scaling of the geodesic-guided approach.
 """
 
-from gva_factorization import gva_factor_search, adaptive_precision
+from gva_factorization import gva_factor_search
 import time
 
 # Test cases: 90-bit semiprimes
