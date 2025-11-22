@@ -14,7 +14,7 @@
 
 **Verdict:** **FALSIFIED**
 
-- Curvature surface is as flat as raw amplitude (variations ~1e-7 to 1e-9)
+- Curvature surface is as flat as raw amplitude (variations ~10^{-26})
 - No correlation between curvature and factor locations
 - Signal-to-noise ratio insufficient for factor discrimination
 - Proves GVA kernel family has no usable gradient for distant factors
