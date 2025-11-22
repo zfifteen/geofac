@@ -159,14 +159,13 @@ class DirichletKernel:
 
 
 def principal_angle(theta: mpf) -> mpf:
-    """Reduce angle to [-π, π] for numerical stability."""
+    """
+    Reduce angle to [-π, π] for numerical stability.
+    Uses modular arithmetic for efficiency.
+    """
     two_pi = 2 * pi
-    # Reduce to [-π, π]
-    t = theta
-    while t > pi:
-        t -= two_pi
-    while t < -pi:
-        t += two_pi
+    # Reduce to [-π, π] using modular arithmetic
+    t = ((theta + pi) % two_pi) - pi
     return t
 
 
@@ -175,7 +174,9 @@ def compute_discrete_delta(n: int) -> mpf:
     Compute discrete frame shift: Δₙ = d(n)·ln(n+1)/e²
     
     Uses log(n) as simplified approximation for d(n) (divisor count),
-    consistent with z_baseline implementation.
+    consistent with z_baseline implementation. This is an average-order
+    approximation; individual divisor counts vary but the approximation
+    provides adequate accuracy for frame shift calculations.
     
     Args:
         n: Integer for divisor computation
@@ -186,7 +187,7 @@ def compute_discrete_delta(n: int) -> mpf:
     if n < 1:
         return mpf(0)
     
-    # Approximate divisor count: d(n) ≈ log(n)
+    # Approximate divisor count: d(n) ≈ log(n) (average order approximation)
     d_n = log(n) if n > 1 else mpf(1)
     ln_term = log(n + 1)
     
@@ -197,6 +198,11 @@ def compute_discrete_delta(n: int) -> mpf:
 def compute_geodesic_transform(n: int, k: float) -> mpf:
     """
     Compute geometric prime-density mapping: θ′(n,k) = φ·((n mod φ)/φ)^k
+    
+    Note: Taking modulo of integer n by irrational φ is intentional for the
+    geodesic mapping. This computes the fractional position of n relative to
+    the golden ratio scale, which is part of the geometric prime-density
+    transformation framework.
     
     Args:
         n: Integer parameter
@@ -209,7 +215,7 @@ def compute_geodesic_transform(n: int, k: float) -> mpf:
     if PHI == 0:
         return mpf(0)
     
-    # Compute (n mod φ) / φ
+    # Compute (n mod φ) / φ - fractional position on golden ratio scale
     n_mod_phi = mpf(n) % PHI
     ratio = n_mod_phi / PHI
     
@@ -372,13 +378,12 @@ class GeometricResonanceFactorizer:
             # Map u to k-range
             k = k_lo + float(u) * k_width
             
-            # Compute geometric prime-density transformation
-            theta_prime = compute_geodesic_transform(N, k)
-            
             # Sweep over m-span for resonance detection
+            # m = 0 assumption (balanced semiprime)
             for m in range(-m_span, m_span + 1):
-                # Compute phase angle
-                theta = two_pi * (mpf(m) + theta_prime / N_mp)
+                # Compute phase angle: θ = 2π*m/k
+                # NOTE: This is the standard formula, not using geodesic transform
+                theta = two_pi * mpf(m) / mpf(k)
                 
                 # Dirichlet kernel amplitude
                 amplitude = DirichletKernel.normalized_amplitude(
@@ -387,42 +392,49 @@ class GeometricResonanceFactorizer:
                 
                 # Resonance detection
                 if amplitude >= mpf(threshold):
-                    # Potential factor candidate
-                    # Snap to nearest integer using phase-corrected approach
-                    candidate_float = N_mp / (mpf(m) + theta_prime / N_mp + mpf(1))
+                    # Potential factor candidate using phase-corrected snap
+                    # Formula: p̂ = exp((ln(N) - θ')/2) where θ' is principal angle
                     
-                    # Guard against zero division and negative values
-                    if candidate_float <= 0:
+                    # Reduce theta to principal angle for stability
+                    theta_principal = principal_angle(theta)
+                    
+                    # Phase-corrected snap: p̂ = exp((ln(N) - θ')/2)
+                    expo = (ln_N - theta_principal) / 2
+                    p_hat = mp.exp(expo)
+                    
+                    # Round to nearest integer (use floor as in Java SnapKernel)
+                    candidate = int(mp.floor(p_hat))
+                    
+                    # Guard: candidate must be in valid range (1, N)
+                    if candidate <= 1 or candidate >= N:
                         continue
                     
-                    candidate = int(candidate_float)
-                    
                     # Verify candidate
-                    if candidate > 1 and candidate < N:
-                        if N % candidate == 0:
-                            p = candidate
-                            q = N // p
-                            
-                            # Order factors
-                            if p > q:
-                                p, q = q, p
-                            
-                            elapsed = time.time() - start_time
-                            print(f"\n=== SUCCESS ===")
-                            print(f"Factor found at sample {n}, m={m}")
-                            print(f"k = {k:.6f}")
-                            print(f"Amplitude = {amplitude:.6f}")
-                            print(f"p = {p}")
-                            print(f"q = {q}")
-                            print(f"Time: {elapsed:.3f} seconds")
-                            
-                            # Verification
-                            if p * q == N:
-                                print(f"Verification: p × q = N ✓")
-                                return (p, q)
-                            else:
-                                print(f"Verification FAILED: p × q ≠ N")
-                                continue
+                    if N % candidate == 0:
+                        p = candidate
+                        q = N // p
+                        
+                        # Order factors
+                        if p > q:
+                            p, q = q, p
+                        
+                        elapsed = time.time() - start_time
+                        print(f"\n=== SUCCESS ===")
+                        print(f"Factor found at sample {n}, m={m}")
+                        print(f"k = {k:.6f}")
+                        print(f"Amplitude = {amplitude:.6f}")
+                        print(f"Theta (principal) = {float(theta_principal):.6f}")
+                        print(f"p = {p}")
+                        print(f"q = {q}")
+                        print(f"Time: {elapsed:.3f} seconds")
+                        
+                        # Verification
+                        if p * q == N:
+                            print(f"Verification: p × q = N ✓")
+                            return (p, q)
+                        else:
+                            print(f"Verification FAILED: p × q ≠ N")
+                            continue
         
         # No factor found
         elapsed = time.time() - start_time
