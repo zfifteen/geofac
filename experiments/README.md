@@ -4,6 +4,18 @@ This directory contains research experiments for the geofac geometric resonance 
 
 ## Current Experiments
 
+### [fractal-recursive-gva-falsification/](fractal-recursive-gva-falsification/)
+
+**Status**: Complete - Hypothesis decisively falsified
+
+**Objective**: Falsify the hypothesis that Fractal-Recursive GVA (Mandelbrot-inspired iterations + recursive subdivision) improves factorization
+
+**Key Finding**: Hypothesis falsified. FR-GVA succeeds only via trial division fallback, not fractal mechanism. Zero fractal candidates find factors. Apparent 88x speedup is artifact of comparing geometric (GVA) vs. classical (trial division) methods.
+
+**Start here**: [fractal-recursive-gva-falsification/INDEX.md](fractal-recursive-gva-falsification/INDEX.md)
+
+---
+
 ### [resonance-drift-hypothesis/](resonance-drift-hypothesis/)
 
 **Status**: Complete - Framework ready, hypothesis untestable
