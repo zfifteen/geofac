@@ -3,6 +3,7 @@ package com.geofac;
 import com.geofac.util.DirichletKernel;
 import com.geofac.util.SnapKernel;
 import com.geofac.util.PrecisionUtil;
+import com.geofac.util.ScaleAdaptiveParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,6 +71,12 @@ public class FactorizerService {
     @Value("${geofac.enable-diagnostics:false}")
     private boolean enableDiagnostics;
 
+    @Value("${geofac.enable-scale-adaptive:true}")
+    private boolean enableScaleAdaptive;
+
+    @Value("${geofac.scale-adaptive-attenuation:0.05}")
+    private double scaleAdaptiveAttenuation;
+
     @Value("${geofac.search-radius-percentage:0.012}")
     private double searchRadiusPercentage;
 
@@ -118,16 +125,37 @@ public class FactorizerService {
         // Fixed: Was using 4x + 200, now using 2x + 150 as per PrecisionUtil
         int adaptivePrecision = Math.max(precision, N.bitLength() * 2 + 150);
 
+        // Apply scale-adaptive parameters if enabled (based on Z5D insights)
+        long adaptiveSamples = samples;
+        int adaptiveMSpan = mSpan;
+        double adaptiveThreshold = threshold;
+        double adaptiveKLo = kLo;
+        double adaptiveKHi = kHi;
+        long adaptiveTimeout = searchTimeoutMs;
+        
+        if (enableScaleAdaptive) {
+            adaptiveSamples = ScaleAdaptiveParams.adaptiveSamples(N, samples);
+            adaptiveMSpan = ScaleAdaptiveParams.adaptiveMSpan(N, mSpan);
+            adaptiveThreshold = ScaleAdaptiveParams.adaptiveThreshold(N, threshold, scaleAdaptiveAttenuation);
+            double[] kRange = ScaleAdaptiveParams.adaptiveKRange(N, kLo, kHi);
+            adaptiveKLo = kRange[0];
+            adaptiveKHi = kRange[1];
+            adaptiveTimeout = ScaleAdaptiveParams.adaptiveTimeout(N, searchTimeoutMs);
+            
+            ScaleAdaptiveParams.logAdaptiveParams(N, adaptiveSamples, adaptiveMSpan, 
+                                                  adaptiveThreshold, adaptiveKLo, adaptiveKHi, adaptiveTimeout);
+        }
+
         // Create config snapshot for reproducibility
         FactorizerConfig config = new FactorizerConfig(
-                adaptivePrecision, // Use adaptivePrecision here
-                samples,
-                mSpan,
+                adaptivePrecision,
+                adaptiveSamples,
+                adaptiveMSpan,
                 J,
-                threshold,
-                kLo,
-                kHi,
-                searchTimeoutMs
+                adaptiveThreshold,
+                adaptiveKLo,
+                adaptiveKHi,
+                adaptiveTimeout
         );
 
         // Enforce project validation gates. See docs/VALIDATION_GATES.md for details.

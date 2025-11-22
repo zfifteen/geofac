@@ -6,6 +6,11 @@ spring:
 
 geofac:
   enable-diagnostics: false
+  # Scale-adaptive mode: automatically tune parameters based on N's bit-length
+  # Implements empirical scaling laws from Z5D research: scale-dependent (not scale-invariant) behavior
+  enable-scale-adaptive: true
+  # Threshold attenuation factor for scale-adaptive mode (signal strength decay with scale)
+  scale-adaptive-attenuation: 0.05
   precision: 240
   samples: 3000
   m-span: 180
