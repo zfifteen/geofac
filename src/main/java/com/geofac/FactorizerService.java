@@ -125,8 +125,8 @@ public class FactorizerService {
         }
 
         // Adaptive precision based on bit length (using the PrecisionUtil formula)
-        // Fixed: Was using 4x + 200, now using 2x + 150 as per PrecisionUtil
-        int adaptivePrecision = Math.max(precision, N.bitLength() * 2 + 150);
+        // Fixed: Updated to 4x + 200 as per issue #21 requirements
+        int adaptivePrecision = Math.max(precision, N.bitLength() * 4 + 200);
 
         // Apply scale-adaptive parameters if enabled (based on Z5D insights)
         long adaptiveSamples = samples;
@@ -282,8 +282,8 @@ public class FactorizerService {
         }
 
         // Use the provided custom config, but still apply adaptive precision
-        // Fixed: Was using 4x + 200, now using 2x + 150 as per the PrecisionUtil formula
-        int adaptivePrecision = Math.max(customConfig.precision(), N.bitLength() * 2 + 150);
+        // Fixed: Updated to 4x + 200 as per issue #21 requirements
+        int adaptivePrecision = Math.max(customConfig.precision(), N.bitLength() * 4 + 200);
         FactorizerConfig config = new FactorizerConfig(
                 adaptivePrecision,
                 customConfig.samples(),
