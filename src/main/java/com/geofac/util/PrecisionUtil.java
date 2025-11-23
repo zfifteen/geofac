@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Precision utility following repository rule:
- * precision = max(configured, N.bitLength() * 2 + 150)
+ * precision = max(configured, N.bitLength() * 4 + 200)
  *
  * Produces a shared MathContext and logs the chosen precision for reproducibility.
  */
@@ -25,7 +25,7 @@ public final class PrecisionUtil {
 
     public static MathContext mathContextFor(BigInteger N, int configuredPrecision) {
         int bitlen = N.bitLength();
-        int required = bitlen * 2 + 150;
+        int required = bitlen * 4 + 200;
         int precision = Math.max(configuredPrecision, required);
         MathContext mc = new MathContext(precision, RoundingMode.HALF_EVEN);
         LOG.info("PrecisionUtil: chosen precision={} (configured={}, bitlen={}, required={}) at {}",
