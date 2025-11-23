@@ -166,14 +166,26 @@ class IsospectraLatticeGenerator:
         # Generate lattice points and compute eigenvalues
         eigenvalues = []
         
+        # Adaptive max_coord based on dimension to avoid exponential blowup
+        # For dim 4: max_coord~10, for dim 6: max_coord~5, for dim 8: max_coord~4
+        if self.dimension <= 4:
+            max_coord = int(np.ceil(np.sqrt(n_eigenvalues)))
+        elif self.dimension == 6:
+            max_coord = min(5, int(np.ceil(np.sqrt(n_eigenvalues))))
+        else:  # dimension >= 8
+            max_coord = min(4, int(np.ceil(np.sqrt(n_eigenvalues))))
+        
         # Search over lattice vectors
-        max_coord = int(np.ceil(np.sqrt(n_eigenvalues)))
         for coords in np.ndindex(*([2 * max_coord + 1] * self.dimension)):
             k = np.array(coords) - max_coord
             if np.sum(k**2) > 0:  # Exclude zero
                 # Eigenvalue: 4π² * k^T G^{-1} k
                 eigenval = 4 * np.pi**2 * (k @ dual_gram @ k)
                 eigenvalues.append(eigenval)
+                
+                # Early termination if we have enough eigenvalues
+                if len(eigenvalues) >= n_eigenvalues * 10:
+                    break
         
         eigenvalues = np.sort(eigenvalues)[:n_eigenvalues]
         
@@ -181,7 +193,7 @@ class IsospectraLatticeGenerator:
         return eigenvalues
     
     def verify_isospectrality(self, basis1: np.ndarray, basis2: np.ndarray, 
-                              tolerance: float = 1e-10) -> Tuple[bool, float]:
+                              tolerance: float = 1e-10, n_eigenvalues: int = 50) -> Tuple[bool, float]:
         """
         Verify that two lattices are isospectral.
         
@@ -189,12 +201,13 @@ class IsospectraLatticeGenerator:
             basis1: First lattice basis
             basis2: Second lattice basis
             tolerance: Maximum allowed difference in eigenvalues
+            n_eigenvalues: Number of eigenvalues to compare
         
         Returns:
             (is_isospectral, max_difference)
         """
-        eigs1 = self.compute_laplace_eigenvalues(basis1)
-        eigs2 = self.compute_laplace_eigenvalues(basis2)
+        eigs1 = self.compute_laplace_eigenvalues(basis1, n_eigenvalues)
+        eigs2 = self.compute_laplace_eigenvalues(basis2, n_eigenvalues)
         
         # Ensure same length for comparison
         min_len = min(len(eigs1), len(eigs2))

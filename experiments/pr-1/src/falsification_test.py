@@ -217,8 +217,8 @@ class FalsificationTest:
         }
         
         # Evaluate falsification criteria
-        falsification_metric = preservation_ratio < self.config['thresholds']['metric_preservation']
-        falsification_runtime = (runtime / baseline['runtime']) > self.config['thresholds']['runtime_ratio']
+        falsification_metric = bool(preservation_ratio < self.config['thresholds']['metric_preservation'])
+        falsification_runtime = bool((runtime / baseline['runtime']) > self.config['thresholds']['runtime_ratio'])
         
         results['falsified_by_metrics'] = falsification_metric
         results['falsified_by_runtime'] = falsification_runtime
@@ -259,7 +259,7 @@ class FalsificationTest:
             'ks_statistic': float(ks_stat),
             'p_value': float(p_value),
             'alpha': alpha,
-            'rejects_poisson_consistency': rejects_null
+            'rejects_poisson_consistency': bool(rejects_null)
         }
         
         logger.info(f"KS test: statistic={ks_stat:.4f}, p={p_value:.4f}, "
