@@ -30,7 +30,7 @@ from typing import Tuple, Optional, List, Dict, Any
 import time
 import json
 from datetime import datetime
-from math import log, sqrt, e, sin, pi
+from math import sqrt, e, sin, pi
 import sys
 
 # Try scipy for Sobol, fallback to simple QMC
@@ -199,7 +199,7 @@ def generate_sobol_samples(n_samples: int, dimension: int, seed: int = 42) -> Li
     if HAS_SCIPY_QMC:
         sampler = qmc.Sobol(d=dimension, scramble=True, seed=seed)
         samples = sampler.random(n_samples)
-        return [list(s) for s in samples]
+        return samples.tolist()
     else:
         # Fallback: golden ratio sequence
         phi = (1 + sqrt(5)) / 2
@@ -237,12 +237,12 @@ def apply_jacobian_weighting(samples: List[List[float]],
     # Scale to achieve target acceptance rate
     w_max = w_max / accept_rate if w_max > 0 else 1.0
     
-    # Rejection sampling
+    # Rejection sampling with deterministic pseudo-random from sample values
     filtered = []
-    for sample, weight in zip(samples, weights):
+    for idx, (sample, weight) in enumerate(zip(samples, weights)):
         # Accept with probability weight/w_max
-        # Deterministic: use sample hash as pseudo-random value
-        pseudo_rand = (hash(tuple(sample)) % 10000) / 10000.0
+        # Use deterministic value derived from sample + index for reproducibility
+        pseudo_rand = (sum(int(x * 1000000) for x in sample) + idx) % 10000 / 10000.0
         if pseudo_rand < weight / w_max:
             filtered.append(sample)
     
@@ -394,9 +394,11 @@ def gva_5d_factor_search(N: int,
             if candidates_tested >= max_samples:
                 break
             
-            # Map sample to candidate near sqrt(N)
-            # Use first dimension to determine offset
-            offset = int((sample[0] - 0.5) * 2 * base_window)
+            # Map 5D sample to candidate near sqrt(N)
+            # Use all dimensions for better coverage: combine via weighted sum
+            offset_ratio = (sample[0] + 0.5 * sample[1] + 0.25 * sample[2]) / 1.75
+            fine_tune = (sample[3] - 0.5) * 0.1 + (sample[4] - 0.5) * 0.05
+            offset = int((offset_ratio + fine_tune - 0.5) * 2 * base_window)
             candidate = sqrt_N + offset
             
             # Skip invalid candidates
@@ -464,8 +466,8 @@ def gva_5d_factor_search(N: int,
         }
         
         # Compute variance if enough samples
-        if len(distances) > 100 and HAS_NUMPY:
-            dist_values = [d for _, d in distances[:1000]]  # First 1000
+        if len(distances) >= 1000 and HAS_NUMPY:
+            dist_values = [d for _, d in distances[:1000]]
             variance = float(np.var(dist_values))
             exp_results['distance_variance'] = variance
         
