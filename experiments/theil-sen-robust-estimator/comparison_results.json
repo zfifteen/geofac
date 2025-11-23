@@ -1,0 +1,98 @@
+{
+  "experiment": "Theil-Sen vs OLS Comparison",
+  "true_parameters": {
+    "slope": 2.5,
+    "intercept": 10.0,
+    "noise_std": 1.0
+  },
+  "scenarios": [
+    {
+      "scenario": "clean_data",
+      "data_points": 50,
+      "true_slope": 2.5,
+      "true_intercept": 10.0,
+      "theil_sen": {
+        "slope": 2.494864864864865,
+        "intercept": 10.231405405405408,
+        "mad": 0.5111351351351372,
+        "ssr": 17.0770647304602,
+        "slope_error": 0.005135135135135194,
+        "intercept_error": 0.23140540540540755
+      },
+      "ols": {
+        "slope": 2.493738967587034,
+        "intercept": 10.149595294117661,
+        "mad": 0.5122610324129555,
+        "ssr": 16.465506513901556,
+        "slope_error": 0.006261032412965939,
+        "intercept_error": 0.14959529411766148
+      }
+    },
+    {
+      "scenario": "5pct_outliers",
+      "data_points": 50,
+      "true_slope": 2.5,
+      "true_intercept": 10.0,
+      "theil_sen": {
+        "slope": 2.4945000000000004,
+        "intercept": 10.272499999999994,
+        "mad": 0.5259999999999998,
+        "ssr": 1167.39335725,
+        "slope_error": 0.005499999999999616,
+        "intercept_error": 0.27249999999999375
+      },
+      "ols": {
+        "slope": 2.483174741896758,
+        "intercept": 10.808418823529436,
+        "mad": 0.5241747418967648,
+        "ssr": 1162.7180145571187,
+        "slope_error": 0.016825258103242202,
+        "intercept_error": 0.8084188235294363
+      }
+    },
+    {
+      "scenario": "10pct_outliers",
+      "data_points": 50,
+      "true_slope": 2.5,
+      "true_intercept": 10.0,
+      "theil_sen": {
+        "slope": 2.4951250000000003,
+        "intercept": 10.265624999999996,
+        "mad": 0.5499999999999883,
+        "ssr": 3129.9915723281247,
+        "slope_error": 0.004874999999999741,
+        "intercept_error": 0.26562499999999645
+      },
+      "ols": {
+        "slope": 2.5261519327731086,
+        "intercept": 9.855477647058843,
+        "mad": 0.6424309243697408,
+        "ssr": 3113.842327642353,
+        "slope_error": 0.026151932773108566,
+        "intercept_error": 0.14452235294115745
+      }
+    },
+    {
+      "scenario": "leverage_points",
+      "data_points": 52,
+      "true_slope": 2.5,
+      "true_intercept": 10.0,
+      "theil_sen": {
+        "slope": 2.500487080103359,
+        "intercept": 10.134476098191211,
+        "mad": 0.4809114987080001,
+        "ssr": 554.9579918060224,
+        "slope_error": 0.00048708010335918317,
+        "intercept_error": 0.13447609819121098
+      },
+      "ols": {
+        "slope": 2.609282576271185,
+        "intercept": 7.625690691003963,
+        "mad": 1.5366193220338928,
+        "ssr": 280.9407282562298,
+        "slope_error": 0.10928257627118487,
+        "intercept_error": 2.374309308996037
+      }
+    }
+  ]
+}
