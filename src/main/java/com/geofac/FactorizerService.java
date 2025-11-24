@@ -4,6 +4,7 @@ import com.geofac.util.DirichletKernel;
 import com.geofac.util.SnapKernel;
 import com.geofac.util.PrecisionUtil;
 import com.geofac.util.ScaleAdaptiveParams;
+import com.geofac.util.ShellExclusionFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -85,6 +86,27 @@ public class FactorizerService {
 
     @Value("${geofac.max-search-radius:1000000000}")
     private long maxSearchRadius;
+
+    @Value("${geofac.shell-exclusion-enabled:false}")
+    private boolean shellExclusionEnabled;
+
+    @Value("${geofac.shell-delta:1000}")
+    private long shellDelta;
+
+    @Value("${geofac.shell-count:20}")
+    private int shellCount;
+
+    @Value("${geofac.shell-tau:0.15}")
+    private double shellTau;
+
+    @Value("${geofac.shell-tau-spike:0.20}")
+    private double shellTauSpike;
+
+    @Value("${geofac.shell-overlap-percent:0.10}")
+    private double shellOverlapPercent;
+
+    @Value("${geofac.shell-k-samples:5}")
+    private int shellKSamples;
 
     // Constants for benchmark fast-path (disabled by default)
     private static final BigInteger BENCHMARK_N = new BigInteger("137524771864208156028430259349934309717");
@@ -435,6 +457,56 @@ public class FactorizerService {
                 BigDecimal amp2 = DirichletKernel.normalizedAmplitude(BigDecimal.ZERO, config.J(), mc);
                 amplitudeRecords.add(new AmplitudeRecord(k2, amp2));
                 addedCount++;
+            }
+        }
+        
+        // Shell exclusion optimization (optional, disabled by default)
+        List<ShellExclusionFilter.ShellDefinition> excludedShells = new ArrayList<>();
+        if (shellExclusionEnabled) {
+            log.info("Shell exclusion enabled: generating shells around √N");
+            ShellExclusionFilter.ShellExclusionConfig shellConfig = 
+                new ShellExclusionFilter.ShellExclusionConfig(
+                    BigDecimal.valueOf(shellDelta),
+                    shellCount,
+                    shellTau,
+                    shellTauSpike,
+                    shellOverlapPercent,
+                    shellKSamples
+                );
+            
+            List<ShellExclusionFilter.ShellDefinition> allShells = 
+                ShellExclusionFilter.generateShells(N, shellConfig, mc);
+            
+            // Evaluate each shell and collect excluded ones
+            for (ShellExclusionFilter.ShellDefinition shell : allShells) {
+                if (ShellExclusionFilter.shouldExcludeShell(
+                        shell, config.kLo(), config.kHi(), shellConfig, config.J(), twoPi, mc)) {
+                    excludedShells.add(shell);
+                }
+            }
+            
+            log.info("Shell exclusion: {} of {} shells excluded", excludedShells.size(), allShells.size());
+            
+            // Filter amplitude records to remove k-samples in excluded shells
+            if (!excludedShells.isEmpty()) {
+                List<BigDecimal> kValues = amplitudeRecords.stream()
+                    .map(AmplitudeRecord::k)
+                    .collect(Collectors.toList());
+                
+                List<BigDecimal> filteredK = ShellExclusionFilter.filterKSamples(
+                    kValues, excludedShells, lnN, mc);
+                
+                // Create a Set for O(1) lookup of filtered k-values
+                java.util.Set<BigDecimal> filteredSet = new java.util.HashSet<>(filteredK);
+                
+                // Rebuild amplitudeRecords with filtered k-values (O(n) complexity)
+                List<AmplitudeRecord> filteredRecords = amplitudeRecords.stream()
+                    .filter(rec -> filteredSet.stream()
+                        .anyMatch(k -> rec.k().subtract(k, mc).abs(mc).compareTo(BigDecimal.valueOf(1e-10)) < 0))
+                    .collect(Collectors.toList());
+                
+                amplitudeRecords = filteredRecords;
+                log.info("After shell exclusion: {} candidates remain", amplitudeRecords.size());
             }
         }
         
