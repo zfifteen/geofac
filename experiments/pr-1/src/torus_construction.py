@@ -15,6 +15,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Constants for eigenvalue computation
+MAX_COORD_4D = None  # Use sqrt-based computation
+MAX_COORD_6D = 5     # Limit for 6D to avoid exponential blowup
+MAX_COORD_8D = 4     # Limit for 8D to avoid exponential blowup
+EIGENVALUE_BUFFER_FACTOR = 10  # Early termination buffer
+
 
 class IsospectraLatticeGenerator:
     """
@@ -42,16 +48,16 @@ class IsospectraLatticeGenerator:
     
     def generate_even_quadratic_form(self) -> np.ndarray:
         """
-        Generate an even quadratic form basis for dimension 4.
+        Generate an even quadratic form basis for dimensions 4, 6, or 8.
         
         Even quadratic forms provide a standard construction for
-        non-isometric isospectral tori in dimension 4.
+        non-isometric isospectral tori in dimension 4 and higher.
         
         Returns:
             Lattice basis matrix (dimension x dimension)
         """
-        if self.dimension != 4:
-            raise ValueError("Even quadratic forms implemented for dimension 4")
+        if self.dimension not in [4, 6, 8]:
+            raise ValueError(f"Even quadratic forms implemented for dimensions 4, 6, 8, got {self.dimension}")
         
         # Start with diagonal lattice
         basis = np.eye(self.dimension)
@@ -60,12 +66,36 @@ class IsospectraLatticeGenerator:
         # PHASE 1 PLACEHOLDER: Full implementation in Phase 2 will use
         # specific even quadratic forms from Schiemann (1990) and
         # Conway-Sloane (1992) as referenced in the technical spec
-        transform = np.array([
-            [2, 1, 0, 0],
-            [1, 2, 1, 0],
-            [0, 1, 2, 1],
-            [0, 0, 1, 2]
-        ])
+        
+        if self.dimension == 4:
+            transform = np.array([
+                [2, 1, 0, 0],
+                [1, 2, 1, 0],
+                [0, 1, 2, 1],
+                [0, 0, 1, 2]
+            ])
+        elif self.dimension == 6:
+            # Phase 1.5 extension: Simple tridiagonal form for 6D
+            transform = np.array([
+                [2, 1, 0, 0, 0, 0],
+                [1, 2, 1, 0, 0, 0],
+                [0, 1, 2, 1, 0, 0],
+                [0, 0, 1, 2, 1, 0],
+                [0, 0, 0, 1, 2, 1],
+                [0, 0, 0, 0, 1, 2]
+            ])
+        else:  # dimension == 8
+            # Phase 1.5 extension: Simple tridiagonal form for 8D
+            transform = np.array([
+                [2, 1, 0, 0, 0, 0, 0, 0],
+                [1, 2, 1, 0, 0, 0, 0, 0],
+                [0, 1, 2, 1, 0, 0, 0, 0],
+                [0, 0, 1, 2, 1, 0, 0, 0],
+                [0, 0, 0, 1, 2, 1, 0, 0],
+                [0, 0, 0, 0, 1, 2, 1, 0],
+                [0, 0, 0, 0, 0, 1, 2, 1],
+                [0, 0, 0, 0, 0, 0, 1, 2]
+            ])
         
         basis = transform @ basis
         
@@ -142,14 +172,26 @@ class IsospectraLatticeGenerator:
         # Generate lattice points and compute eigenvalues
         eigenvalues = []
         
+        # Adaptive max_coord based on dimension to avoid exponential blowup
+        # For dim 4: max_coord~10, for dim 6: max_coord~5, for dim 8: max_coord~4
+        if self.dimension <= 4:
+            max_coord = int(np.ceil(np.sqrt(n_eigenvalues)))
+        elif self.dimension == 6:
+            max_coord = min(MAX_COORD_6D, int(np.ceil(np.sqrt(n_eigenvalues))))
+        else:  # dimension >= 8
+            max_coord = min(MAX_COORD_8D, int(np.ceil(np.sqrt(n_eigenvalues))))
+        
         # Search over lattice vectors
-        max_coord = int(np.ceil(np.sqrt(n_eigenvalues)))
         for coords in np.ndindex(*([2 * max_coord + 1] * self.dimension)):
             k = np.array(coords) - max_coord
             if np.sum(k**2) > 0:  # Exclude zero
                 # Eigenvalue: 4π² * k^T G^{-1} k
                 eigenval = 4 * np.pi**2 * (k @ dual_gram @ k)
                 eigenvalues.append(eigenval)
+                
+                # Early termination if we have enough eigenvalues
+                if len(eigenvalues) >= n_eigenvalues * EIGENVALUE_BUFFER_FACTOR:
+                    break
         
         eigenvalues = np.sort(eigenvalues)[:n_eigenvalues]
         
@@ -157,7 +199,7 @@ class IsospectraLatticeGenerator:
         return eigenvalues
     
     def verify_isospectrality(self, basis1: np.ndarray, basis2: np.ndarray, 
-                              tolerance: float = 1e-10) -> Tuple[bool, float]:
+                              tolerance: float = 1e-10, n_eigenvalues: int = 50) -> Tuple[bool, float]:
         """
         Verify that two lattices are isospectral.
         
@@ -165,12 +207,13 @@ class IsospectraLatticeGenerator:
             basis1: First lattice basis
             basis2: Second lattice basis
             tolerance: Maximum allowed difference in eigenvalues
+            n_eigenvalues: Number of eigenvalues to compare
         
         Returns:
             (is_isospectral, max_difference)
         """
-        eigs1 = self.compute_laplace_eigenvalues(basis1)
-        eigs2 = self.compute_laplace_eigenvalues(basis2)
+        eigs1 = self.compute_laplace_eigenvalues(basis1, n_eigenvalues)
+        eigs2 = self.compute_laplace_eigenvalues(basis2, n_eigenvalues)
         
         # Ensure same length for comparison
         min_len = min(len(eigs1), len(eigs2))
