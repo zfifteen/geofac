@@ -96,6 +96,22 @@ This directory contains research experiments for the geofac geometric resonance 
 
 ---
 
+### [band-router-early-exit-falsification/](band-router-early-exit-falsification/)
+
+**Status**: Complete - Hypothesis decisively falsified
+
+**Objective**: Test whether (1) band-first routing with wheel mask reduces candidate count by ≥70% while maintaining coverage, and (2) early-exit guard achieves ≥35% step/time reduction with ≤5% recall loss.
+
+**Key Finding**: Hypothesis falsified on both counts. Band routing achieved only 8.3% reduction (threshold: ≥70%) and early-exit achieved 0% step reduction (threshold: ≥35%). This is not a parameter tuning failure—it reflects a structural incompatibility between the hypothesis design (which assumes large search spaces with wasteful regions) and CHALLENGE_127's tight geometric structure (expected gap ~44, only ~217 candidates in search range).
+
+**Critical Insight**: The expected gap Δ ≈ ln(√N) ≈ 44 for CHALLENGE_127 reveals a fundamental tension: banding assumes large δ-ranges with sparse factors, but at scale 10^19, factors are densely clustered within ~100 units of √N. Sophisticated routing adds overhead without benefit at this scale.
+
+**Test Results**: 10/12 tests passing. Unit tests pass; performance thresholds fail as expected for falsification.
+
+**Start here**: [band-router-early-exit-falsification/EXPERIMENT_REPORT.md](band-router-early-exit-falsification/EXPERIMENT_REPORT.md)
+
+---
+
 ### [z5d-informed-gva/](z5d-informed-gva/)
 
 **Status**: Framework complete - Ready for execution
