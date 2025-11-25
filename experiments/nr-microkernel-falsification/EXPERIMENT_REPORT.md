@@ -1,18 +1,28 @@
 # NR Microkernel Falsification Experiment Report
 
-**Date**: 2025-11-25T13:50:39.377413
+**Date**: 2025-11-25
 
 ## Executive Summary
 
-**VERDICT: HYPOTHESIS FALSIFIED**
+### VERDICT: HYPOTHESIS DECISIVELY FALSIFIED
 
-The hypothesis that embedding a Newton-Raphson microkernel inside QMC iterations
-improves resonance scan peak detection has been **falsified**.
+The hypothesis that embedding a Newton-Raphson (NR) microkernel inside QMC iterations improves resonance scan peak detection by locally refining promising peaks on-the-fly has been **decisively falsified**.
 
-Key findings:
-- **Excessive runtime overhead**: NR(1) = 60.0%, NR(2) = 112.1%
-- **Low improvement rate**: NR(1) = 2.2%, NR(2) = 2.2%
-- **Majority showed no benefit**: 3/4 criteria met
+### Bottom Line
+
+The NR microkernel approach **fails catastrophically** in the GVA factorization context:
+
+1. **Runtime penalty is severe**: NR(1) adds ~60% overhead, NR(2) adds ~112% overhead—far exceeding the "little speed" cost claimed in the hypothesis.
+
+2. **Improvement rate is negligible**: Only 2 out of 91 triggered refinements (2.2%) showed any improvement. This is statistically indistinguishable from noise.
+
+3. **No factorization benefit**: All test cases succeeded equally with or without NR. The NR microkernel provides zero additional capability.
+
+4. **Fundamental mismatch**: NR optimization assumes smooth, continuous objective functions. The geodesic distance landscape in integer factor space is inherently discontinuous—NR is the wrong tool for this problem.
+
+### Recommendation
+
+**Do not implement the NR microkernel approach** in GVA/geofac production code. The hypothesis is based on an incorrect assumption that geodesic distance metrics behave like continuous objective functions suitable for gradient-based optimization.
 
 ## Overall Statistics
 
@@ -83,3 +93,68 @@ Run the experiment:
 cd experiments/nr-microkernel-falsification
 python3 experiment_runner.py
 ```
+
+## Detailed Analysis
+
+### Why Newton-Raphson Fails for GVA Factorization
+
+The hypothesis assumes that geodesic distance metrics in the 7D torus embedding behave like smooth objective functions amenable to gradient-based optimization. This assumption is fundamentally flawed for several reasons:
+
+#### 1. Integer Domain Discontinuity
+
+The factor search operates on integer candidates. NR is designed for continuous optimization where `x ← x - f(x)/f'(x)` produces a real-valued update. In our implementation, we must round NR updates to integers, which:
+
+- Destroys the quadratic convergence guarantee of NR
+- Often produces no change when the update is < 0.5
+- Creates oscillatory behavior when the update bounces between adjacent integers
+
+#### 2. Non-Convex Geodesic Landscape
+
+The Riemannian distance function on the 7D torus creates a highly non-convex landscape:
+
+- Multiple local minima exist (not just at true factors)
+- The Hessian is often indefinite, violating NR's convexity assumption
+- Saddle points dominate the high-dimensional space
+
+#### 3. Gradient Flatness Near Factors
+
+Empirically, we observe that the geodesic distance gradient becomes very flat near true factors. This means:
+
+- |f'(x)| approaches our epsilon threshold, triggering safety stops
+- When derivatives are small, NR steps are either tiny or numerically unstable
+- The "valley" containing factors is wide and flat, not sharp
+
+#### 4. Computational Cost Structure
+
+Each NR step requires:
+1. 3 embedding computations (current point ± h for numerical derivatives)
+2. 3 distance computations
+3. Derivative and Hessian approximations
+
+This triples the cost per triggered candidate, explaining the 60-112% overhead observed.
+
+### Why the Hypothesis Seemed Plausible But Isn't
+
+The original hypothesis came from a continuous optimization context (e.g., Dirichlet/CZT kernels for signal processing) where:
+
+- The objective function is smooth and well-behaved
+- NR can exploit local curvature effectively
+- Small refinements compound into significant improvements
+
+In GVA factorization:
+
+- The objective function is fundamentally discrete
+- "Peaks" are binary (divides or doesn't divide)
+- Geodesic distance is a heuristic for guiding search, not a continuous objective to optimize
+
+### Alternative Approaches
+
+If local refinement is desired, consider:
+
+1. **Integer-aware search**: Expand/contract search windows based on geodesic distance trends, rather than trying to refine individual points
+2. **Adaptive sampling density**: Increase QMC sample density in promising regions (which GVA already does)
+3. **Multi-resolution search**: Use coarse-to-fine grid search, not continuous optimization
+
+## Conclusion
+
+The NR microkernel hypothesis is **decisively falsified**. The approach is fundamentally misaligned with the discrete, non-convex nature of integer factorization. Future optimization efforts should focus on integer-native techniques rather than adapting continuous optimization methods.
