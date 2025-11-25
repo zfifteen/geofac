@@ -46,6 +46,9 @@ from wheel_residues import (
 )
 from z5d_api import local_prime_density, expected_gap
 
+# Precompute residue-to-index mapping for O(1) lookup
+WHEEL_RESIDUE_INDEX = {r: i for i, r in enumerate(WHEEL_210_RESIDUES)}
+
 
 # ============================================================================
 # Constants
@@ -105,12 +108,9 @@ class Band:
     center: int           # Center of band (√N + offset)
     delta_start: int      # Start offset from √N
     delta_end: int        # End offset from √N
-    width: int            # Band width
+    width: int            # Band width (computed from delta_end - delta_start)
     expected_density: float
     priority: int         # Lower is higher priority
-    
-    def __post_init__(self):
-        self.width = self.delta_end - self.delta_start
 
 
 @dataclass
@@ -302,9 +302,9 @@ def generate_band_candidates(band: Band, sqrt_N: int, wheel: int = DEFAULT_WHEEL
     while current <= end:
         yield current
         
-        # Jump to next admissible using wheel structure
+        # Jump to next admissible using wheel structure (O(1) lookup)
         residue = current % WHEEL_MODULUS
-        residue_idx = WHEEL_210_RESIDUES.index(residue)
+        residue_idx = WHEEL_RESIDUE_INDEX[residue]
         
         if residue_idx < WHEEL_SIZE - 1:
             next_residue = WHEEL_210_RESIDUES[residue_idx + 1]
