@@ -14,6 +14,11 @@ logger = logging.getLogger(__name__)
 # Regularization constant for numerical stability
 REGULARIZATION_EPS = 1e-10
 
+# Decimal precision for resonance comparison (avoids floating-point issues)
+# This affects cross-validation by determining how close resonances must be
+# to be considered "the same". Higher values = stricter matching.
+RESONANCE_DECIMAL_PRECISION = 6
+
 
 class QMCProbe:
     """
@@ -161,8 +166,11 @@ class QMCProbe:
         resonance_sets = []
         for samples, amplitudes in results:
             high_idx = np.where(amplitudes > threshold)[0]
-            # Round to avoid floating-point issues
-            resonances = set(np.round(samples[high_idx, 0], decimals=6))
+            # Round to configurable precision to avoid floating-point issues
+            resonances = set(np.round(
+                samples[high_idx, 0], 
+                decimals=RESONANCE_DECIMAL_PRECISION
+            ))
             resonance_sets.append(resonances)
         
         if len(resonance_sets) < 2:

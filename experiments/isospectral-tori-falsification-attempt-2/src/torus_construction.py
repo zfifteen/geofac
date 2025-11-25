@@ -28,9 +28,17 @@ REGULARIZATION_EPS = 1e-10
 
 class IsospectraLatticeGenerator:
     """
-    Generate non-isometric isospectral lattices for flat tori.
+    Generate non-isometric lattices for flat tori using orthogonal similarity transforms.
     
-    Schiemann's theorem guarantees existence in dim ≥4.
+    NOTE: This is an ATTEMPTED construction that aims to produce isospectral lattices
+    via orthogonal similarity transforms. However, as the experiment demonstrates,
+    this method does NOT produce truly isospectral tori. While matrix similarity
+    preserves matrix eigenvalues, the Laplace spectrum on flat tori depends on the
+    inverse Gram matrix in a way that is NOT preserved by similarity transforms.
+    
+    Schiemann's theorem guarantees existence of isospectral non-isometric tori in
+    dim ≥4, but achieving this requires specialized theta-function equivalent
+    quadratic forms, not simple orthogonal transformations.
     """
     
     def __init__(self, dimension: int, seed: int = 42):
@@ -90,17 +98,23 @@ class IsospectraLatticeGenerator:
     def deform_basis_isospectral(self, gram: np.ndarray, 
                                   deform_index: int = 0) -> np.ndarray:
         """
-        Apply isospectral deformation preserving Laplace spectrum.
+        Apply orthogonal similarity transform to Gram matrix.
         
-        Uses orthogonal similarity transform that preserves eigenvalues
-        but changes the lattice geometry.
+        IMPORTANT: While similarity transforms preserve matrix eigenvalues,
+        this does NOT preserve the Laplace spectrum on flat tori. The Laplace
+        eigenvalues depend on the inverse Gram matrix through the formula:
+        λ_k = 4π² ||k||² where ||k||² = k^T G^{-1} k for lattice vector k.
+        
+        The experiment confirms this limitation: eigenvalue differences of
+        8-28 were observed (tolerance: 10^-8), proving that orthogonal
+        similarity is NOT a valid isospectral deformation method.
         
         Args:
             gram: Original Gram matrix
             deform_index: Index controlling deformation angle
         
         Returns:
-            Deformed Gram matrix (isospectral)
+            Deformed Gram matrix (NOT isospectral, despite the method name)
         """
         d = gram.shape[0]
         theta = np.pi / 6 * (deform_index + 1)  # Different angles

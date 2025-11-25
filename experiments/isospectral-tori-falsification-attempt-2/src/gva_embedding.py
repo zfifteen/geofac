@@ -91,7 +91,12 @@ class GVAEmbedding:
             return count
         
         # Large unknown: assume prime (d=2)
-        logger.debug(f"Assuming d(n)=2 for large n={n}")
+        # WARNING: This is a significant simplification. For large numbers without
+        # known factors, we cannot efficiently compute d(n) without factorization.
+        # This assumption directly impacts curvature calculations and GVA embeddings.
+        # For the experiment's purposes (testing with known factors), this doesn't
+        # affect results since we always pass p, q for the semiprime.
+        logger.debug(f"Assuming d(n)=2 for large n={n} (no known factors)")
         return 2
     
     def curvature(self, n: int, p: Optional[int] = None, 
@@ -120,6 +125,11 @@ class GVAEmbedding:
         Embed integer n into torus defined by Gram matrix.
         
         Uses golden ratio quasi-random distribution scaled by curvature.
+        The scaling by κ(n) is heuristic: curvature provides a number-theoretic
+        "weight" that maps larger/more divisible numbers to larger coordinates.
+        This is a simplified embedding that creates consistent, reproducible
+        mappings without geometric rigor—the goal is to test metric preservation
+        across isospectral tori, not to optimize the embedding itself.
         
         Args:
             n: Integer to embed
