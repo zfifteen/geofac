@@ -1,0 +1,58 @@
+# Configuration for Isospectral Tori Falsification Experiment - Attempt 2
+# Target: 127-bit challenge semiprime (CHALLENGE_127)
+
+experiment:
+  name: "isospectral-tori-falsification-attempt-2"
+  version: "1.0"
+  date: "2025-11-25"
+  hypothesis: >
+    Non-isometric isospectral flat tori in dimensions ≥4 preserve
+    curvature-divisor metrics under GVA embeddings and yield accelerated
+    factor detection via parallel QMC cross-validation.
+
+# Test dimensions
+dimensions:
+  - 4
+  - 6
+  - 8
+
+# Choir sizes by dimension
+choir_sizes:
+  4: 2
+  6: 3
+  8: 4
+
+# Falsification thresholds
+thresholds:
+  metric_preservation: 0.95   # <0.95 falsifies preservation claim
+  runtime_ratio: 1.1          # >1.1 falsifies acceleration claim
+  success_rate: 0.6667        # ≥2/3 test cases must show deviation
+
+# QMC parameters
+qmc:
+  base_samples: 5000
+  scrambling: "owen"           # Owen scrambling for Sobol sequences
+  seed: 42                     # Fixed seed for reproducibility
+
+# GVA curvature parameters
+gva:
+  # κ(n) = d(n) * ln(n+1) / e²
+  min_precision: 200           # Minimum decimal digits
+  precision_factor: 4          # precision = max(min, bitLength * factor + 200)
+
+# Statistical validation
+statistics:
+  ks_test_alpha: 0.05          # Kolmogorov-Smirnov significance level
+
+# Output
+output:
+  results_dir: "data/results"
+  log_level: "INFO"
+
+# Target semiprime (127-bit challenge)
+target:
+  n: "137524771864208156028430259349934309717"
+  p: "10508623501177419659"
+  q: "13086849276577416863"
+  bits: 127
+  validation_gate: "127-bit challenge"
