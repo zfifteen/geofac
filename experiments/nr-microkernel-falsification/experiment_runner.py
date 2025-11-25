@@ -40,6 +40,13 @@ from nr_microkernel_gva import (
 )
 
 
+# Falsification criteria thresholds
+# These define when the hypothesis is considered falsified
+SCORE_LIFT_THRESHOLD = 1.0       # Minimum % score lift to be "significant"
+OVERHEAD_THRESHOLD = 15.0        # Maximum % overhead before "excessive"
+IMPROVEMENT_RATE_THRESHOLD = 20.0  # Minimum % improvement rate to be "useful"
+
+
 @dataclass
 class TestCase:
     """Test case definition."""
@@ -256,17 +263,20 @@ def analyze_results(results: List[ComparisonResult]) -> Dict:
     else:
         analysis['nr2_improvement_rate'] = 0
     
-    # Falsification criteria check
+    # Falsification criteria check using defined thresholds
     # The hypothesis is falsified if:
-    # 1. NR shows no significant improvement in score lift (<1%)
-    # 2. Runtime penalty exceeds 15%
-    # 3. Improvement rate is low (<20% of triggers)
+    # 1. NR shows no significant improvement in score lift (< SCORE_LIFT_THRESHOLD %)
+    # 2. Runtime penalty exceeds OVERHEAD_THRESHOLD %
+    # 3. Improvement rate is low (< IMPROVEMENT_RATE_THRESHOLD % of triggers)
     # 4. At least 2/3 of test cases show no benefit
     
     falsification_criteria = {
-        'no_score_lift': analysis['avg_nr1_score_lift'] < 1.0 and analysis['avg_nr2_score_lift'] < 1.0,
-        'excessive_overhead': analysis['avg_nr1_overhead_pct'] > 15 or analysis['avg_nr2_overhead_pct'] > 15,
-        'low_improvement_rate': analysis['nr1_improvement_rate'] < 20 and analysis['nr2_improvement_rate'] < 20,
+        'no_score_lift': (analysis['avg_nr1_score_lift'] < SCORE_LIFT_THRESHOLD and 
+                          analysis['avg_nr2_score_lift'] < SCORE_LIFT_THRESHOLD),
+        'excessive_overhead': (analysis['avg_nr1_overhead_pct'] > OVERHEAD_THRESHOLD or 
+                               analysis['avg_nr2_overhead_pct'] > OVERHEAD_THRESHOLD),
+        'low_improvement_rate': (analysis['nr1_improvement_rate'] < IMPROVEMENT_RATE_THRESHOLD and 
+                                 analysis['nr2_improvement_rate'] < IMPROVEMENT_RATE_THRESHOLD),
     }
     
     # Count tests with no benefit

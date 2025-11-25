@@ -82,6 +82,14 @@ def adaptive_precision(N: int) -> int:
     """
     Compute adaptive precision based on N's bit length.
     Formula: max(50, N.bitLength() × 4 + 200)
+    
+    Rationale: The formula ensures adequate precision for high-precision arithmetic:
+    - Base 200 digits provides buffer for intermediate calculations
+    - 4x bit length accounts for the fact that operations like sqrt, trig
+      functions, and iterative algorithms can lose precision
+    - Minimum of 50 ensures reasonable precision for small numbers
+    
+    This formula is consistent with gva_factorization.py and CODING_STYLE.md.
     """
     bit_length = N.bit_length()
     return max(50, bit_length * 4 + 200)
