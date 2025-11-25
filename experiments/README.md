@@ -137,6 +137,22 @@ This directory contains research experiments for the geofac geometric resonance 
 
 ---
 
+### [unbalanced-left-edge-127bit/](unbalanced-left-edge-127bit/)
+
+**Status**: Complete - Hypothesis not validated
+
+**Objective**: Falsify the hypothesis that GEOFAC can factor the 127-bit challenge number using geometric signal via "unbalanced / left-edge" geometry, detecting τ''' spikes that reveal small factor locations.
+
+**Key Finding**: The τ''' method correctly identifies the 63-bit scale region containing the actual factors (p ≈ 2^63.19, q ≈ 2^63.50). However, the candidate coverage around detected spikes is insufficient for factor recovery within the tested budget (100k candidates). The geometric signal is present but not precise enough for direct factor extraction.
+
+**Innovation**: Novel τ-space approach using third derivative analysis to detect "left-edge cliff" signatures characteristic of unbalanced semiprimes.
+
+**Test Results**: 56 spikes detected, top spikes at b=63.28 and b=63.41 correlate with actual factor bit positions. 100,020 candidates tested across 20 spikes. Runtime: 774ms.
+
+**Start here**: [unbalanced-left-edge-127bit/README.md](unbalanced-left-edge-127bit/README.md)
+
+---
+
 ### [weyl-law-remainder-oscillations/](weyl-law-remainder-oscillations/)
 
 **Status**: (Pre-existing experiment)
