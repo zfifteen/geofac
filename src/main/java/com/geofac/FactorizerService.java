@@ -644,7 +644,7 @@ public class FactorizerService {
                  pCenter, searchRadius, searchRadiusPercentage * 100, 
                  capped ? " [CAPPED]" : "", candidatesTested, passRate, bandWidth, coverage);
         if (coverage < coverageGateThreshold) {
-            log.warn("Ring search coverage below threshold: {:.3f} < {:.3f}", coverage, coverageGateThreshold);
+            log.warn("Ring search coverage below threshold: {} < {}", String.format("%.3f", coverage), String.format("%.3f", coverageGateThreshold));
         }
         
         // Test pCenter itself first
