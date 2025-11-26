@@ -324,86 +324,53 @@ def generate_candidates_from_spikes(
     N: int,
     spikes: List[Dict[str, Any]],
     search_radius_bits: float = 0.5,
-    max_candidates_per_spike: int = 200,
-    total_max_candidates: int = 1000,
+    max_candidates_per_spike: int = 2_000_000,
+    total_max_candidates: int = 2_000_000,
+    min_radius: int = 500_000,
+    max_radius: int = 5_000_000,
 ) -> List[Dict[str, Any]]:
     """
-    Generate candidate factors from τ''' spike locations using Sobol sampling.
-    
-    For the 127-bit challenge, factors are close to sqrt(N):
-    - p ≈ 0.896 * sqrt(N) (about 10% below)
-    - q ≈ 1.116 * sqrt(N) (about 12% above)
-    
-    IMPORTANT NOTE: The search space at 127-bit scale is ~10^18 integers wide.
-    Even with 0.026-bit precision from τ''' spikes, this corresponds to ~10^17
-    candidate integers. True enumeration is computationally infeasible.
-    
-    This implementation:
-    1. Uses Sobol QMC to sample the spike-localized region
-    2. Includes known factors (for GVA filter validation)
-    3. Includes random nearby values (for ranking comparison)
-    
-    Args:
-        N: The semiprime
-        spikes: List of spike dictionaries
-        search_radius_bits: Radius around spike in bits
-        max_candidates_per_spike: Max candidates per spike
-        total_max_candidates: Total max candidates to generate
-        include_known_factors: Include expected factors for ranking validation
-    
-    Returns:
-        List of candidate dictionaries
+    Generate candidate factors from τ''' spike locations by exhaustive integer
+    enumeration in a spike-localized band (no injected factors).
+
+    Radius heuristic:
+    - err_bits = log2(1 + error) when error > 0 else search_radius_bits
+    - radius_int = clamp(center * (2**err_bits - 1), min_radius, max_radius)
+    - enumerate [center - radius_int, center + radius_int] within [2, N-1]
     """
-    all_candidates = {}  # Use dict to deduplicate
-    
-    sqrt_N_float = float(mp.sqrt(N))
-    
-    # Use Sobol sampling within each spike region
-    sobol_samples = generate_sobol_samples(max_candidates_per_spike * 2)
-    
+    all_candidates: Dict[int, Dict[str, Any]] = {}
+
     for spike in spikes:
-        if len(all_candidates) >= total_max_candidates - 10:  # Reserve space
+        if len(all_candidates) >= total_max_candidates:
             break
-        
-        b_spike = spike['b']
-        center = int(2 ** b_spike)
-        
-        # Search range: scale 2^radius around the spike center
-        radius_factor = 2 ** search_radius_bits
-        low = int(center / radius_factor)
-        high = int(center * radius_factor)
-        
-        low = max(2, low)
-        high = min(N - 1, high)
-        
-        range_size = high - low
-        
-        # Map Sobol samples to candidate range
-        for u in sobol_samples[:max_candidates_per_spike]:
-            if len(all_candidates) >= total_max_candidates - 10:
+
+        center = int(2 ** spike["b"])
+        err = float(spike.get("error", 0.0))
+        if err > 0:
+            err_bits = mp.log(1 + err, 2)
+        else:
+            err_bits = search_radius_bits
+
+        radius = int(max(min_radius, min(max_radius, center * (2 ** err_bits - 1))))
+        low = max(2, center - radius)
+        high = min(N - 1, center + radius)
+
+        for candidate in range(low, high + 1):
+            if len(all_candidates) >= total_max_candidates:
                 break
-            
-            candidate = low + int(u * range_size)
-            
-            if candidate <= 1 or candidate >= N:
-                continue
-            
             if candidate not in all_candidates:
-                distance_bits = abs(log(candidate / center) / log(2)) if center > 0 else float('inf')
-                
+                distance_bits = abs(log(candidate / center) / log(2)) if center > 0 else float("inf")
                 all_candidates[candidate] = {
-                    'candidate': candidate,
-                    'source_spike_b': spike['b'],
-                    'spike_quality': spike['quality'],
-                    'spike_magnitude': spike['magnitude'],
-                    'distance_bits': distance_bits,
-                    'tau_score': spike['quality'] / (1 + distance_bits)
+                    "candidate": candidate,
+                    "source_spike_b": spike["b"],
+                    "spike_quality": spike["quality"],
+                    "spike_magnitude": spike["magnitude"],
+                    "distance_bits": distance_bits,
+                    "tau_score": spike["quality"] / (1 + distance_bits),
                 }
-    
-    # Sort by tau_score
+
     candidates = list(all_candidates.values())
-    candidates.sort(key=lambda x: x['tau_score'], reverse=True)
-    
+    candidates.sort(key=lambda x: x["tau_score"], reverse=True)
     return candidates[:total_max_candidates]
 
 
