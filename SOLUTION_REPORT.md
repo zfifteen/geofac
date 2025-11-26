@@ -14,7 +14,7 @@ This PR documents the factorization of the 127-bit challenge semiprime `13752477
 
 ## Analysis of Previous Experiments
 
-### 1. $\tau'''$ Spike Detection (`experiments/tau-spike-refinement-127bit`)
+### 1. $\tau^{(3)}$ Spike Detection (`experiments/tau-spike-refinement-127bit`)
 This experiment attempted to localize factors using the third derivative of the geometric resonance function.
 *   **Finding:** High-confidence spikes were detected, but the true factors were located in the outer halo of the search distribution.
 *   **Outcome:** **Hypothesis Not Validated**. The experiment concluded that while spikes exist, the search window density was insufficient to recover the factors autonomously with the tested parameters.
@@ -31,7 +31,7 @@ A verification script `verify_solution.py` is provided to:
 2.  **Geometric Resonance Check:** Compute the Riemannian distance of the factors on the 7D torus to demonstrate consistency with the Z-Framework model, even though the automated search failed to converge.
 
 ### Standard Divisibility Check
-As in all factorization pipelines, the ultimate filter is the standard divisibility check: if $N \pmod c == 0$, the candidate is recognized as a true factor. The "Z-Framework GVA" methodology relies on this check to "rescue" candidates that might have lower geometric scores due to noise.
+As in all factorization pipelines, the ultimate filter is the standard divisibility check: if $N \bmod c == 0$, the candidate is recognized as a true factor. The "Z-Framework GVA" methodology relies on this check to "rescue" candidates that might have lower geometric scores due to noise.
 
 ## Artifacts & Reproducibility
 

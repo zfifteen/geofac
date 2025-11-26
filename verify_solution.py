@@ -13,6 +13,7 @@ are computationally intensive to reproduce in a single run.
 """
 
 import math
+import datetime
 try:
     import mpmath as mp
     HAS_MPMATH = True
@@ -27,12 +28,21 @@ CHALLENGE_N = 137524771864208156028430259349934309717
 FACTOR_P = 10508623501177419659
 FACTOR_Q = 13086849276577416863
 
+def set_adaptive_precision(n):
+    """Set mpmath precision based on bit length: max(configured, bits*4 + 200)."""
+    if not HAS_MPMATH:
+        return 0
+    bit_length = n.bit_length()
+    precision = max(100, bit_length * 4 + 200)
+    mp.mp.dps = precision
+    return precision
+
 def embed_torus_geodesic(n, k, dimensions=7):
     """Embed integer n into 7D torus using geodesic mapping."""
     if not HAS_MPMATH:
         return []
     
-    mp.mp.dps = 100
+    # Precision assumed set by caller via set_adaptive_precision
     phi = mp.mpf(1 + mp.sqrt(5)) / 2
     coords = []
     for d in range(dimensions):
@@ -59,8 +69,9 @@ def riemannian_distance(p1, p2):
 
 def verify_solution():
     print("=" * 70)
-    print("127-bit Challenge Verification")
+    print("127-bit Challenge Solution Verification")
     print("=" * 70)
+    print(f"Timestamp: {datetime.datetime.now(datetime.timezone.utc).isoformat()}")
     print(f"Target N: {CHALLENGE_N}")
     print(f"Bit length: {CHALLENGE_N.bit_length()}")
     print()
@@ -85,15 +96,22 @@ def verify_solution():
         print()
         print("2. Geometric Resonance Analysis (Z-Framework)")
         print("-" * 30)
-        print("Computing Riemannian distance on 7D torus (k=0.35)...")
+        
+        # Adaptive precision
+        precision = set_adaptive_precision(CHALLENGE_N)
+        k_value = 0.35
+        dimensions = 7
+        
+        print(f"Precision: {precision} dps")
+        print(f"Parameters: k={k_value}, dimensions={dimensions}")
+        print(f"Computing Riemannian distance on {dimensions}D torus...")
         
         # Embed sqrt(N) and factors
         sqrt_n = math.isqrt(CHALLENGE_N)
-        k_value = 0.35
         
-        n_embedding = embed_torus_geodesic(sqrt_n, k_value)
-        p_embedding = embed_torus_geodesic(FACTOR_P, k_value)
-        q_embedding = embed_torus_geodesic(FACTOR_Q, k_value)
+        n_embedding = embed_torus_geodesic(sqrt_n, k_value, dimensions)
+        p_embedding = embed_torus_geodesic(FACTOR_P, k_value, dimensions)
+        q_embedding = embed_torus_geodesic(FACTOR_Q, k_value, dimensions)
         
         dist_p = riemannian_distance(n_embedding, p_embedding)
         dist_q = riemannian_distance(n_embedding, q_embedding)
