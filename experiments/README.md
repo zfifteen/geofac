@@ -4,6 +4,20 @@ This directory contains research experiments for the geofac geometric resonance 
 
 ## Current Experiments
 
+### [isospectral-tori-falsification-attempt-2/](isospectral-tori-falsification-attempt-2/)
+
+**Status**: Complete - Hypothesis decisively falsified
+
+**Objective**: Attempt falsification of the hypothesis that non-isometric isospectral flat tori in dimensions ≥4 preserve curvature-divisor metrics under GVA embeddings and yield accelerated factor detection via parallel QMC cross-validation.
+
+**Key Finding**: Hypothesis decisively falsified with 100% failure rate (3/3 tests). Metric preservation was 0% in all dimensions (4D, 6D, 8D) with runtime overheads of 4× to 34×. The fundamental failure is that orthogonal similarity transforms do not produce truly isospectral lattices—eigenvalue differences were 8-28 (tolerance: 10^-8).
+
+**Critical Insight**: The construction method fails to satisfy Schiemann's theorem conditions. True isospectral non-isometric tori require specialized theta-function equivalent quadratic forms, not simple rotations.
+
+**Start here**: [isospectral-tori-falsification-attempt-2/INDEX.md](isospectral-tori-falsification-attempt-2/INDEX.md)
+
+---
+
 ### [nr-microkernel-falsification/](nr-microkernel-falsification/)
 
 **Status**: Complete - Hypothesis decisively falsified

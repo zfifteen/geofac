@@ -1,0 +1,63 @@
+{
+  "metadata": {
+    "description": "Test cases for isospectral tori falsification experiment",
+    "target": "127-bit challenge semiprime (CHALLENGE_127)",
+    "created": "2025-11-25"
+  },
+  "challenge_127": {
+    "n": "137524771864208156028430259349934309717",
+    "p": "10508623501177419659",
+    "q": "13086849276577416863",
+    "bits": 127,
+    "note": "Primary validation gate - whitelist exception to [1e14, 1e18] range"
+  },
+  "test_cases": [
+    {
+      "id": "TC-4D",
+      "dimension": 4,
+      "lattice_type": "even_quadratic_forms",
+      "choir_size": 2,
+      "target": "CHALLENGE_127",
+      "parameters": {
+        "qmc_samples": 5000,
+        "precision_base": 200
+      },
+      "expected_behavior": {
+        "note": "If hypothesis holds, metric preservation ≥0.95, runtime ratio ≤1.1"
+      }
+    },
+    {
+      "id": "TC-6D",
+      "dimension": 6,
+      "lattice_type": "tridiagonal_cartan",
+      "choir_size": 3,
+      "target": "CHALLENGE_127",
+      "parameters": {
+        "qmc_samples": 5000,
+        "precision_base": 200
+      },
+      "expected_behavior": {
+        "note": "If hypothesis holds, metric preservation ≥0.95, runtime ratio ≤1.1"
+      }
+    },
+    {
+      "id": "TC-8D",
+      "dimension": 8,
+      "lattice_type": "tridiagonal_cartan",
+      "choir_size": 4,
+      "target": "CHALLENGE_127",
+      "parameters": {
+        "qmc_samples": 5000,
+        "precision_base": 200
+      },
+      "expected_behavior": {
+        "note": "If hypothesis holds, metric preservation ≥0.95, runtime ratio ≤1.1"
+      }
+    }
+  ],
+  "falsification_criteria": {
+    "metric_preservation_threshold": 0.95,
+    "runtime_ratio_threshold": 1.1,
+    "success_threshold": "≥2/3 test cases must show deviation to falsify"
+  }
+}
