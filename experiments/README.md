@@ -18,6 +18,18 @@ This directory contains research experiments for the geofac geometric resonance 
 
 ---
 
+### [precision-sweep-127bit/](precision-sweep-127bit/)
+
+**Status**: Complete - Precision not the blocker
+
+**Objective**: Sweep mpmath precision (100–400 dps) for the 127-bit challenge while holding k/window fixed to see if peaks sharpen; diagnose precision vs. kernel-shape limits.
+
+**Key Finding**: Flat response. Peak amplitude (0.9637), width (1000), and residual (0.03768) remain constant across all dps values, and the peak stays offset from pₜᵣᵤₑ. Precision increases do not help; indicates a curvature/shape issue instead of arithmetic noise.
+
+**Start here**: [precision-sweep-127bit/README.md](precision-sweep-127bit/README.md)
+
+---
+
 ### [theil-sen-robust-estimator/](theil-sen-robust-estimator/)
 
 **Status**: Complete - Hypothesis strongly supported
