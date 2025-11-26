@@ -52,6 +52,10 @@ Q_TRUE = int("13086849276577416863")
 # Precision grid
 DPS_LIST = [100, 140, 180, 220, 240, 260, 280, 320, 360, 400]
 
+# Curvature correction knobs (variant 2 in PR guidance)
+CURVATURE_ALPHA = 1e-3
+CURVATURE_BETA = 0.1
+
 # Fixed sampling window around the known factor. Width is small to keep the
 # harness fast but still wide enough to observe peak shape changes.
 OFFSETS = list(range(-500, 501, 10))  # 101 candidates, +/-500 around p_true
@@ -69,6 +73,7 @@ class SweepResult:
     candidates: int
     ms: float
     peak_candidate: int
+    variant: str  # 'baseline' or 'curvature'
 
     @staticmethod
     def header() -> Dict[str, str]:
@@ -79,6 +84,8 @@ class SweepResult:
             "q_true": str(Q_TRUE),
             "k": K_VALUE,
             "offset_range": f"{OFFSETS[0]}..{OFFSETS[-1]} step {OFFSETS[1]-OFFSETS[0]}",
+            "curvature_alpha": CURVATURE_ALPHA,
+            "curvature_beta": CURVATURE_BETA,
         }
 
 
@@ -98,7 +105,16 @@ def compute_peak_width(candidates: List[int], amplitudes: List[mp.mpf], peak_idx
     return candidates[end_idx] - candidates[start_idx]
 
 
-def run_once(dps: int) -> SweepResult:
+def apply_curvature(dist: mp.mpf) -> mp.mpf:
+    """
+    Minimal curvature correction: add small term scaled by ln(N)/N^beta.
+    This follows the PR guidance (option 1) with fixed alpha, beta.
+    """
+    kappa = mp.log(CHALLENGE_127) / (mp.power(CHALLENGE_127, CURVATURE_BETA))
+    return dist + (CURVATURE_ALPHA * kappa)
+
+
+def run_once(dps: int, variant: str) -> SweepResult:
     mp.mp.dps = dps
     t0 = time.time()
 
@@ -113,6 +129,8 @@ def run_once(dps: int) -> SweepResult:
         candidate = P_TRUE + offset
         cand_coords = embed_torus_geodesic(candidate, K_VALUE)
         dist = riemannian_distance(N_coords, cand_coords)
+        if variant == "curvature":
+            dist = apply_curvature(dist)
         amp = mp.mpf(1) / (mp.mpf(1) + dist)
 
         candidates.append(candidate)
@@ -135,6 +153,7 @@ def run_once(dps: int) -> SweepResult:
         candidates=len(candidates),
         ms=(time.time() - t0) * 1000.0,
         peak_candidate=candidates[peak_idx],
+        variant=variant,
     )
 
     return result
@@ -150,21 +169,24 @@ def write_jsonl(results: List[SweepResult], path: Path) -> None:
 def make_plot(results: List[SweepResult], path: Path) -> None:
     import matplotlib.pyplot as plt
 
-    dps = [r.dps for r in results]
-    residuals = [r.best_residual for r in results]
-    widths = [r.peak_width for r in results]
-    amps = [r.peak_amp for r in results]
+    def series(field: str, variant: str) -> List[float]:
+        return [getattr(r, field) for r in results if r.variant == variant]
+
+    dps = [r.dps for r in results if r.variant == "baseline"]
 
     fig, ax1 = plt.subplots(figsize=(8, 4.5))
 
-    ax1.plot(dps, residuals, marker="o", color="#d62728", label="best_residual")
+    ax1.plot(dps, series("best_residual", "baseline"), marker="o", color="#d62728", label="residual (base)")
+    ax1.plot(dps, series("best_residual", "curvature"), marker="o", linestyle="--", color="#ff9896", label="residual (curv)")
     ax1.set_xlabel("mpmath precision (dps)")
     ax1.set_ylabel("Residual (torus distance)", color="#d62728")
     ax1.tick_params(axis="y", labelcolor="#d62728")
 
     ax2 = ax1.twinx()
-    ax2.plot(dps, amps, marker="s", color="#1f77b4", label="peak_amp")
-    ax2.plot(dps, widths, marker="^", color="#2ca02c", label="peak_width")
+    ax2.plot(dps, series("peak_amp", "baseline"), marker="s", color="#1f77b4", label="peak_amp (base)")
+    ax2.plot(dps, series("peak_amp", "curvature"), marker="s", linestyle="--", color="#aec7e8", label="peak_amp (curv)")
+    ax2.plot(dps, series("peak_width", "baseline"), marker="^", color="#2ca02c", label="peak_width (base)")
+    ax2.plot(dps, series("peak_width", "curvature"), marker="^", linestyle="--", color="#98df8a", label="peak_width (curv)")
     ax2.set_ylabel("Amplitude / Width", color="#1f77b4")
     ax2.tick_params(axis="y", labelcolor="#1f77b4")
 
@@ -183,7 +205,9 @@ def main() -> None:
     out_dir = Path(__file__).parent
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    results = [run_once(dps) for dps in DPS_LIST]
+    results = []
+    for variant in ("baseline", "curvature"):
+        results.extend(run_once(dps, variant) for dps in DPS_LIST)
 
     jsonl_path = out_dir / "precision_sweep_127bit.jsonl"
     plot_path = out_dir / "precision_sweep_127bit.png"
