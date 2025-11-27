@@ -281,7 +281,7 @@ GVA offers advantages over classical methods:
 | ECM | O(exp(√(ln p ln ln p))) | No | Deterministic |
 | GVA | Sub-exponential | Quasi-deterministic | Geometric structure |
 
-**Note**: Per CODING_STYLE.md, this implementation uses geometric scoring to narrow candidates and certifies the top-ranked set with exact divisibility checks; broad classical fallbacks (Pollard/ECM/wide trial sweeps) remain out of scope.
+**Note**: Per CODING_STYLE.md, this implementation uses only geometric methods - no classical fallbacks.
 
 ## Limitations
 

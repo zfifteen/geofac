@@ -1,7 +1,5 @@
 # Harden factor_one.sh & Diagnostics-First Workflow (SMEAC Brief)
 
-> Historical note: This brief predates the current policy that geometric scoring narrows candidates and exact divisibility checks certify them. References to "no trial division" below should be read as "no broad classical fallbacks"; targeted certification on the ranked set is expected under the updated model.
-
 Issue Reference: #29  
 Branch: factor-one-shell-script  
 Timestamp: 2025-11-14T02:56:15.285Z  

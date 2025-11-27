@@ -45,7 +45,7 @@ def test_150bit_gva():
     - If successful at this scale, confirms "larger = easier" phenomenon
       extends beyond 140 bits when geometry aligns
     
-    This would represent a breakthrough: geometric ranking so strong that certification finds factors with essentially zero extra search (beyond a handful of divisibility checks)
+    This would represent a breakthrough: pure geometric factorization
     of 150-bit semiprimes in seconds, unprecedented in the literature.
     """
     print("=" * 70)

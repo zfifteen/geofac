@@ -19,7 +19,7 @@ Both methods are:
 • CPU-only
 • deterministic
 • free of bounded local search
-• Geometric scoring narrows candidates; certification uses exact divisibility checks on the top-ranked small set (no broad trial-division sweeps)
+• free of gcd probing or trial division
 • CI-verified
 
 
@@ -85,7 +85,7 @@ PURE RESONANCE Rules (must be upheld)
 • No GNFS/ECM/etc.
 • No scanning ±R integers around the candidate
 • No gcd probing of neighboring integers
-• No broad trial-division sweeps; certification via targeted `N % d` on the ranked candidates is required
+• No trial division
 • CPU-only deterministic pipeline
 • Only analytic, closed-form adjustments to the physics mapping (bias model, comb sampling, crest locator, etc.)
 

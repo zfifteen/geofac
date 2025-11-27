@@ -185,7 +185,7 @@ refine(p, ln, d, mc, i)
 
 ## What to Delete Immediately
 
-- **Classical fallback paths:** Pollard's Rho, ECM, sieves, wide trial-division sweeps (targeted certification checks on ranked candidates remain in-scope)
+- **Classical fallback paths:** Pollard's Rho, trial division, ECM
 - **Unused parameters or config options**
 - **"Just in case" validation that never fires**
 - **Comments explaining bad names** (rename instead)

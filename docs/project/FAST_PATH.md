@@ -61,7 +61,7 @@ Then re-run:
 ```bash
 ./gradlew test --tests com.geofac.FactorizerServiceTest.testFactor127BitSemiprime -i
 ```
-With fast path disabled (default), expect resonance-guided search plus targeted certification within the timeout (no broad fallbacks).
+With fast path disabled (default), expect resonance success or failure within the timeout (no fallbacks).
 
 ## Recommended Path to Genuine Success
 1. Remove fast path.
@@ -99,7 +99,7 @@ Current test `@TestPropertySource` settings:
 ## Decision Log Summary
 - Failure with original resonance parameters (≈428s, no factors).
 - Failure after widening search and adjusting thresholds (≈600s, no factors).
-- Enforced resonance-guided factorization (no broad fallbacks; certification via exact `N % d` on the ranked set).
+- Enforced resonance-only factorization (no fallbacks).
 - Added fast path guarded by `enable-fast-path` flag (disabled by default).
 - Normalized test properties to remove duplicates and set 5-minute timeout.
 - Marked 127-bit test as out-of-gate benchmark.

@@ -41,7 +41,7 @@ record BenchmarkRun(
  * Per repository rules:
  * - Tests only in Gate 2 validation window [1e14, 1e18]
  * - Pins seeds and logs all parameters
- * - No broad classical fallbacks (Pollard/ECM/wide sweeps); exact divisibility checks certify the ranked candidates.
+ * - No classical fallbacks
  * - Exports artifacts for reproducibility
  */
 @Service
