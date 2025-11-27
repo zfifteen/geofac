@@ -38,7 +38,7 @@ Work from first principles. Guard them in code.
 - Only official challenge numbers are to be used for semiprimes.
 
 ### Geometric Purity
-- **No classical fallbacks:** No Pollard's Rho, trial division, ECM, or sieve methods
+- **No broad classical fallbacks:** No Pollard's Rho, ECM, sieves, or wide trial-division sweeps. Exact `N % d` checks on the top-ranked geometric candidates are the required certification step.
 - **Prove the hypothesis or fail it.** No hedging with fallback paths.
 - **Deterministic/quasi-deterministic methods only:** Sobol/Halton sequences, Dirichlet kernel gating, phase snapping
 

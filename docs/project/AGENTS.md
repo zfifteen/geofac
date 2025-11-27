@@ -9,7 +9,7 @@ Authoritative references
 
 Non‑negotiable invariants
 - Validation gate: The project follows a strict, four-gate validation policy. All code must adhere to the rules defined in [docs/VALIDATION_GATES.md](docs/VALIDATION_GATES.md).
-- No classical fallbacks: Do not propose or insert Pollard’s Rho, trial division, ECM, or sieves.
+- No broad classical fallbacks: Do not propose or insert Pollard’s Rho, ECM, sieves, or wide trial-division sweeps. Exact `N % d` checks on the top-ranked geometric candidates are required for certification.
 - Deterministic/quasi‑deterministic methods only (Sobol/Halton, Gaussian kernel resonance, phase‑corrected snap). No stochastic “try until it works.”
 - Precision is explicit and adaptive: precision = max(configured, N.bitLength() × 4 + 200). In Java use BigDecimal with explicit MathContext; in Python use mpmath/mpfr with explicit mp.dps/bits. Log the chosen precision.
 

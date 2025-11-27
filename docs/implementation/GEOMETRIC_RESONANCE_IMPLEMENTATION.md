@@ -297,7 +297,7 @@ Match: True
 
 1. **Minimal change**: Single module, no modifications to existing code
 2. **Smallest solution**: Direct port of proven Java approach
-3. **No classical fallbacks**: Pure geometric resonance (no Pollard, ECM, trial division)
+3. **No broad classical fallbacks**: Geometric resonance ranks candidates; exact divisibility checks on the top-ranked small set certify factors (Pollard, ECM, wide trial-division sweeps remain out of scope).
 4. **Explicit precision**: mp.dps set and logged every run
 5. **Deterministic**: Pinned seeds, no stochastic elements
 6. **Reproducible**: All parameters logged with timestamps

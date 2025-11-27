@@ -1,8 +1,8 @@
-## Geofac — Singular Objective: Factor N via Geometric Resonance (No Fallbacks)
+## Geofac — Singular Objective: Factor N via Geometric Resonance (Geometry narrows, division certifies)
 
 This repo has a single objective: factor the challenge semiprime `N` defined in the project's official validation policy. See [docs/VALIDATION_GATES.md](docs/VALIDATION_GATES.md) for a full description of the target and success criteria.
 
-Geofac is a Spring Boot + Spring Shell application that implements the geometric resonance factorization algorithm in pure Java. All fallback methods (Pollard Rho, ECM, QS, etc.) are removed or unreachable—the code path is 100 % geometric.
+Geofac is a Spring Boot + Spring Shell application that implements the geometric resonance factorization algorithm in pure Java. Broad classical fallbacks (Pollard Rho, ECM, QS, etc.) are removed or unreachable. Exact divisibility checks on the top-ranked geometric candidates **are required** as the certification step.
 
 ### Why it exists
 - Deliver a reproducible, deterministic geometric-resonance factorization for the official challenge `N`.
@@ -10,12 +10,12 @@ Geofac is a Spring Boot + Spring Shell application that implements the geometric
 - Offer an interactive CLI for iterating resonance parameters only.
 
 ### Non-negotiables
-- **No fallbacks** – the system never drops into Pollard Rho, ECM, QS, or any probabilistic helper.
-- **Resonance-only search paths** – Dirichlet kernel gating + golden-ratio QMC drive every candidate.
+- **No broad classical fallbacks** – the system never drops into Pollard Rho, ECM, QS, or other wide-search helpers; certification uses a *small* number of exact `N % d` checks over the top-ranked candidates.
+- **Resonance-guided search** – Dirichlet kernel gating + golden-ratio QMC drive candidate generation and ranking; divisibility checks only certify the finalists.
 - **Reproducibility** – fixed seeds, frozen configs, and exported artifacts per run.
 
-### Key features (resonance-only)
-- **High-precision core** – `FactorizerService` uses `ch.obermuhlner:big-math`, Dirichlet kernel gating, golden-ratio quasi Monte Carlo sampling, and phase-corrected snapping.
+### Key features (resonance-guided + certified)
+- **High-precision core** – `FactorizerService` uses `ch.obermuhlner:big-math`, Dirichlet kernel gating, golden-ratio quasi Monte Carlo sampling, and phase-corrected snapping to rank candidates, then certifies them with exact divisibility checks.
 - **Configurable search** – sampling range, kernel order (`J`), thresholds, and precision live in `application.yml`.
 - **Spring Shell CLI** – run `factor <N>` inside the embedded shell with deterministic logs.
 - **Proof artifacts** – each run writes `factors.json`, `search_log.txt`, `config.json`, and `env.txt`.
@@ -47,7 +47,7 @@ shell:>example
 
 On success the CLI prints `p`, `q`, verifies `p * q == N`, and writes artifacts to a run-specific directory.
 
-If no factors are found within the configured budget, the run exits cleanly. No alternative methods are attempted.
+If no factors are found within the configured budget, the run exits cleanly. No broad fallback methods are attempted; only the built-in certification checks run over the ranked list.
 
 ---
 
@@ -117,7 +117,7 @@ See `docs/VALIDATION_GATES.md` for complete gate specifications and success crit
 ```
 src/main/java/com/geofac
 ├── GeofacApplication      # Spring Boot entry point
-├── FactorizerService      # Geometric resonance search core (no fallbacks)
+├── FactorizerService      # Geometric resonance search core (rank + certify top candidates)
 ├── FactorizerShell        # Spring Shell command surface
 ├── util
 │   ├── DirichletKernel    # Kernel amplitude / angular math
@@ -132,7 +132,7 @@ src/main/java/com/geofac
 - Artifacts from `results/N=.../<run_id>/` must be captured for verification.
 
 ### Contributing
-This repo has a single goal: factor `N` above via geometric resonance only. PRs must explain how they advance that goal. Introducing or re-enabling fallback methods is out of scope.
+This repo has a single goal: factor `N` above via geometric resonance with a minimal certification tail. PRs must explain how they advance that goal. Introducing broad fallback methods is out of scope; certification via exact `N % d` on a tiny candidate set is expected.
 
 ### Roadmap (strictly in-scope)
 1. **Performance Optimization (Primary Goal)**: Implement and benchmark optimizations to reduce sample counts, decrease runtime, and/or improve convergence. This includes parameter grid refinement, algorithmic improvements, and hardware acceleration.

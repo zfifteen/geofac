@@ -72,10 +72,10 @@ The 127-bit benchmark is verified using full geometric resonance factorization w
 - k-range: [0.20, 0.50] (golden ratio bounds)
 - timeout: 300000ms (5 minutes)
 
-**Test Result:** Geometric resonance-only factorization
+**Test Result:** Geometric resonance-guided factorization with certification
 - Expected factors: p=10508623501177419659, q=13086849276577416863
 - Product verification: p × q = 137524771864208156028430259349934309717 ✓
-- Method: Pure geometric resonance (no fallbacks, no fast-paths)
+- Method: Geometric scoring + exact divisibility checks on the top-ranked candidates (no broad classical fallbacks, no fast-paths)
 
 ## Operational State
 
@@ -98,8 +98,8 @@ geofac.allow-127bit-benchmark=true
 
 This configuration:
 - Enables property-gated exception for 127-bit challenge
-- Runs full geometric resonance algorithm
-- No fast-path or fallback methods
+- Runs full geometric resonance algorithm and certifies top-ranked candidates via exact division
+- No fast-path or broad classical fallback methods
 - Validates factorization capability at cryptographic scale
 
 ## Security Considerations
@@ -123,4 +123,4 @@ This configuration:
 
 The gate enforcement mechanism successfully restricts factorization inputs to the validated range while providing a controlled, property-gated exception for 127-bit benchmark verification. The implementation maintains operational security with production-safe defaults while enabling research validation when explicitly configured.
 
-**Verification Status:** The 127-bit benchmark test executes full geometric resonance factorization using coordinate transformation methods exclusively, demonstrating the algorithm's capability at cryptographically relevant scales within the 5-minute timeout budget.
+**Verification Status:** The 127-bit benchmark test executes full geometric resonance factorization, then certifies the top-ranked candidates with exact divisibility checks—demonstrating the algorithm's capability at cryptographically relevant scales within the 5-minute timeout budget.
