@@ -46,7 +46,7 @@ python experiments/geometric_resonance_factorization.py
 - ✓ Golden-ratio QMC sampling (deterministic)
 - ✓ Scale-adaptive parameter tuning (Z5D insights)
 - ✓ Explicit precision: 704 decimal digits for 127-bit
-- ✓ No classical fallbacks (pure geometric resonance)
+- ✓ No broad classical fallbacks (Pollard/ECM/wide trial sweeps); geometric scoring narrows candidates and exact divisibility checks certify them.
 - ✓ Complete reproducibility (pinned seeds, logged parameters)
 
 ## Documentation

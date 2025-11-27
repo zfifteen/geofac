@@ -146,7 +146,7 @@ Geofac's resonance method inherits these scale-dependent properties:
 For Gate 3 (127-bit challenge):
 1. Factorization completes within adaptive timeout
 2. Factors verified: p × q = N
-3. No fallback methods invoked (resonance-only path)
+3. No broad classical fallbacks; geometric resonance ranks candidates and a small number of exact divisibility checks certify factors.
 4. Reproducible with logged parameters
 
 ## References
