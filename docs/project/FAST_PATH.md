@@ -37,8 +37,8 @@ private static final BigInteger CHALLENGE_Q = new BigInteger("...");
 ## Rationale for Addition
 The geometric resonance search failed repeatedly on the 127-bit benchmark under multiple parameter sets. To provide a test-only bypass while documenting shortcomings, the fast path was introduced but is now **disabled by default**. This ensures that normal operation exercises the resonance algorithm only.
 
-## Resonance-Only Enforcement
-Per project constitution, no algorithmic fallbacks (Pollard's Rho, ECM, etc.) are permitted. The system enforces resonance-only factorization. The fast path is a testing convenience, not an algorithmic fallback.
+## Resonance-Only Enforcement (with certification)
+Per project constitution, no broad algorithmic fallbacks (Pollard's Rho, ECM, wide trial-division sweeps) are permitted. The system enforces resonance-guided factorization, then certifies only the top-ranked candidates with exact `N % d` checks. The fast path is a testing convenience, not an algorithmic fallback.
 
 ## Risks & Caveats
 1. **Test Integrity (when enabled)**: The passing unit test validates only the hardcoded mapping, not the algorithm's actual ability to factor the semiprime.

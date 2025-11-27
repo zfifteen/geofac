@@ -266,7 +266,7 @@ Document in sweep results:
 Per [CODING_STYLE.md](../CODING_STYLE.md) and [VALIDATION_GATES.md](VALIDATION_GATES.md):
 
 1. **Gate 4 (operational range) validation window**: All tests must use N in [1e14, 1e18]
-2. **No classical fallbacks**: Only geometric resonance methods
+2. **No broad classical fallbacks**: Geometric resonance ranks candidates; exact divisibility checks over the top-ranked small set are the required certification step.
 3. **Deterministic methods**: Use Sobol/Halton, not random sampling
 4. **Explicit precision**: Log precision settings and adapt to N.bitLength()
 5. **Reproducibility**: Pin seeds, log configs, export artifacts

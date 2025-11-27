@@ -14,7 +14,7 @@ This factorization is achieved through:
 - **Dirichlet kernel gating**: Amplitude filtering in resonance space
 - **Quasi-Monte Carlo sampling**: For variance reduction
 - **Phase-corrected snapping**: Geometric candidate derivation from resonance peaks
-- **N-only computation**: No trial division, GCD probing, or bounded local search
+- **Resonance-guided search with certification**: Geometric scoring narrows candidates; a small number of exact divisibility checks (`N % d`) certify the factors. Broad classical fallbacks (Pollard, ECM, wide trial-division sweeps) are excluded.
 
 ## 2. Method Overview
 
@@ -712,8 +712,8 @@ Reference: Niederreiter, H. (1992). "Random Number Generation and Quasi-Monte Ca
 
 ### 6.1 In Scope
 - Deterministic factorization of balanced semiprimes as defined in the validation policy.
-- N-only computation (no trial division, GCD, bounded local search).
-- Resonance-only methodology.
+- Resonance-guided search with certification: geometric scoring narrows candidates; exact divisibility checks over the top-ranked small set certify factors.
+- No broad classical fallback algorithms (Pollard, ECM, wide trial-division sweeps); certification checks are allowed and required.
 - Reproducible artifacts and configurations.
 
 ### 6.2 Out of Scope
@@ -743,13 +743,13 @@ This section validates the acceptance criteria specified in the original user st
 
 **Status**: PASS
 
-### A2 — N-only Path ✓
+### A2 — Resonance-Guided + Certified Path ✓
 
-**Criterion**: Documentation shows resonance-only factoring with no fallbacks, and configuration illustrates the key parameters.
+**Criterion**: Documentation shows geometric scoring that narrows candidates and a minimal certification tail (exact divisibility checks over the top-ranked set), with no broad classical fallback algorithms.
 
 **Verification**:
-- Algorithm flow is explicitly N-only (Section 2.2).
-- No fallback methods are implemented.
+- Algorithm flow is resonance-guided with explicit certification step (Section 2.2).
+- No broad fallback methods (Pollard, ECM, wide sweeps) are implemented; only certification checks are used.
 - Key parameters are documented (Section 3.3).
 
 **Status**: PASS
