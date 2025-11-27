@@ -43,7 +43,7 @@ Per CODING_STYLE.md:
 - All tests use RSA challenge numbers (no synthetic semiprimes)
 - Operational range: [10^14, 10^18] (47-60 bits approximately)
 - 127-bit whitelist: CHALLENGE_127 = 137524771864208156028430259349934309717
-- No classical fallbacks (Pollard's Rho, trial division, ECM, sieves)
+- No broad classical fallbacks (Pollard's Rho, ECM, sieves, wide trial-division sweeps); exact `N % d` checks on the top-ranked candidates are expected for certification.
 - Deterministic/quasi-deterministic methods only
 - Explicit precision: max(configured, N.bitLength() × 4 + 200)
 
@@ -54,4 +54,3 @@ Tests must log:
 - Timestamps
 - Measured outcomes (factorization time, candidates tested)
 - Success/failure with reproducible seeds
-
