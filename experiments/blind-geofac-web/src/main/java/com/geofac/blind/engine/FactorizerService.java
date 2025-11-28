@@ -112,7 +112,7 @@ public class FactorizerService {
     @Value("${geofac.triangle-filter-balance-band:4.0}")
     private double triangleFilterBalanceBand;
 
-    @Value("${geofac.triangle-filter-max-log-skew:2.0}")
+    @Value("${geofac.triangle-filter-max-log-skew:0.0}")
     private double triangleFilterMaxLogSkew;
 
     private static final BigInteger BENCHMARK_N = new BigInteger("137524771864208156028430259349934309717");

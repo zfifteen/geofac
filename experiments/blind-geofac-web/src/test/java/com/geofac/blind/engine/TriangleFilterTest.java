@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(properties = {
         "geofac.triangle-filter-enabled=true",
         "geofac.triangle-filter-balance-band=4.0",
-        "geofac.triangle-filter-max-log-skew=2.0",
+        "geofac.triangle-filter-max-log-skew=0.0",
         "geofac.samples=100",
         "geofac.m-span=60",
         "geofac.search-timeout-ms=30000",
@@ -48,7 +48,7 @@ class TriangleFilterTest {
     @Test
     void trueFactor_isNeverRejected() {
         // True factors of a semiprime must always pass the triangle filter
-        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 2.0);
+        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 0.0);
 
         boolean pAccepted = factorizerService.triangleFilterAccepts(TEST_N, TEST_P, sqrtN, config, MC);
         boolean qAccepted = factorizerService.triangleFilterAccepts(TEST_N, TEST_Q, sqrtN, config, MC);
@@ -60,7 +60,7 @@ class TriangleFilterTest {
     @Test
     void extremelySmallCandidate_isRejected() {
         // A candidate that's far smaller than sqrtN/R should be rejected
-        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 2.0);
+        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 0.0);
         BigInteger tinyCandidate = BigInteger.valueOf(2); // Way too small
 
         boolean accepted = factorizerService.triangleFilterAccepts(TEST_N, tinyCandidate, sqrtN, config, MC);
@@ -71,7 +71,7 @@ class TriangleFilterTest {
     @Test
     void extremelyLargeCandidate_isRejected() {
         // A candidate that's far larger than sqrtN*R should be rejected
-        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 2.0);
+        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 0.0);
         BigInteger hugeCandidate = TEST_N.subtract(BigInteger.ONE); // Almost N itself
 
         boolean accepted = factorizerService.triangleFilterAccepts(TEST_N, hugeCandidate, sqrtN, config, MC);
@@ -96,7 +96,7 @@ class TriangleFilterTest {
     @Test
     void candidateNearSqrtN_isAccepted() {
         // A candidate near sqrt(N) should always be accepted
-        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 2.0);
+        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 0.0);
         BigInteger nearSqrt = sqrtN.toBigInteger();
 
         boolean accepted = factorizerService.triangleFilterAccepts(TEST_N, nearSqrt, sqrtN, config, MC);
@@ -106,7 +106,7 @@ class TriangleFilterTest {
 
     @Test
     void zeroCandidateIsRejected() {
-        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 2.0);
+        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 0.0);
 
         boolean accepted = factorizerService.triangleFilterAccepts(TEST_N, BigInteger.ZERO, sqrtN, config, MC);
 
@@ -115,7 +115,7 @@ class TriangleFilterTest {
 
     @Test
     void negativeCandidateIsRejected() {
-        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 2.0);
+        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 0.0);
 
         boolean accepted = factorizerService.triangleFilterAccepts(TEST_N, BigInteger.valueOf(-5), sqrtN, config, MC);
 
@@ -124,7 +124,7 @@ class TriangleFilterTest {
 
     @Test
     void candidateEqualToN_isRejected() {
-        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 2.0);
+        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 0.0);
 
         boolean accepted = factorizerService.triangleFilterAccepts(TEST_N, TEST_N, sqrtN, config, MC);
 
@@ -133,12 +133,28 @@ class TriangleFilterTest {
 
     @Test
     void candidateGreaterThanN_isRejected() {
-        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 2.0);
+        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 0.0);
         BigInteger biggerThanN = TEST_N.add(BigInteger.ONE);
 
         boolean accepted = factorizerService.triangleFilterAccepts(TEST_N, biggerThanN, sqrtN, config, MC);
 
         assertFalse(accepted, "Candidate greater than N should be rejected");
+    }
+
+    @Test
+    void bandEdgeFactors_acceptedWithoutSkewCheck() {
+        // Test that band-edge factors pass when skew check is disabled (default)
+        // This ensures the "true factors never rejected" invariant holds
+        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 0.0);
+        
+        // Create a candidate slightly inside the band edge (sqrtN/4 + 1)
+        // This avoids rounding issues from BigInteger truncation
+        BigInteger lowerBoundEdge = sqrtN.divide(BigDecimal.valueOf(4.0), MC).toBigInteger().add(BigInteger.ONE);
+        
+        // Should pass because it's within [sqrtN/4, sqrtN*4]
+        boolean accepted = factorizerService.triangleFilterAccepts(TEST_N, lowerBoundEdge, sqrtN, config, MC);
+        
+        assertTrue(accepted, "Band-edge factor should be accepted when skew check disabled");
     }
 
     @Test

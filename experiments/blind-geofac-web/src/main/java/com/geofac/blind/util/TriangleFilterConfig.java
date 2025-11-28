@@ -19,6 +19,6 @@ public record TriangleFilterConfig(
      * Default configuration with filter disabled.
      */
     public static TriangleFilterConfig disabled() {
-        return new TriangleFilterConfig(false, 4.0, 2.0);
+        return new TriangleFilterConfig(false, 4.0, 0.0);
     }
 }
