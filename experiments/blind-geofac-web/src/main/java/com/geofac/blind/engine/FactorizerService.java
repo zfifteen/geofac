@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -109,6 +110,37 @@ public class FactorizerService {
 
     private static final BigInteger GATE_4_MIN = new BigInteger("100000000000000"); // 10^14
     private static final BigInteger GATE_4_MAX = new BigInteger("1000000000000000000"); // 10^18
+
+    /**
+     * Expose current base (pre-adaptive) settings for operators/diagnostics.
+     */
+    public Map<String, Object> currentSettings() {
+        return Map.ofEntries(
+                Map.entry("precision", precision),
+                Map.entry("samples", samples),
+                Map.entry("mSpan", mSpan),
+                Map.entry("J", J),
+                Map.entry("threshold", threshold),
+                Map.entry("kLo", kLo),
+                Map.entry("kHi", kHi),
+                Map.entry("searchTimeoutMs", searchTimeoutMs),
+                Map.entry("enableFastPath", enableFastPath),
+                Map.entry("allow127bitBenchmark", allow127bitBenchmark),
+                Map.entry("enableDiagnostics", enableDiagnostics),
+                Map.entry("enableScaleAdaptive", enableScaleAdaptive),
+                Map.entry("scaleAdaptiveAttenuation", scaleAdaptiveAttenuation),
+                Map.entry("searchRadiusPercentage", searchRadiusPercentage),
+                Map.entry("maxSearchRadius", maxSearchRadius),
+                Map.entry("coverageGateThreshold", coverageGateThreshold),
+                Map.entry("shellExclusionEnabled", shellExclusionEnabled),
+                Map.entry("shellDelta", shellDelta),
+                Map.entry("shellCount", shellCount),
+                Map.entry("shellTau", shellTau),
+                Map.entry("shellTauSpike", shellTauSpike),
+                Map.entry("shellOverlapPercent", shellOverlapPercent),
+                Map.entry("shellKSamples", shellKSamples)
+        );
+    }
 
     public FactorizationResult factor(BigInteger N) {
         Queue<BigDecimal> amplitudeDistribution = enableDiagnostics ? new ConcurrentLinkedQueue<>() : null;

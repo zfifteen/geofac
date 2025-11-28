@@ -50,6 +50,10 @@ public class FactorService implements AutoCloseable, DisposableBean {
         return jobs.get(jobId);
     }
 
+    public Map<String, Object> currentSettings() {
+        return factorizerService.currentSettings();
+    }
+
     public SseSnapshot logsSnapshot(UUID jobId) {
         FactorJob job = jobs.get(jobId);
         if (job == null)

@@ -3,6 +3,7 @@ package com.geofac.blind.service;
 import com.geofac.blind.engine.FactorizationResult;
 import com.geofac.blind.engine.FactorizerService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -12,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@EnabledIfSystemProperty(named = "geofac.runLongChallengeIT", matches = "true")
 @SpringBootTest(properties = {
         // Full-budget settings intended to mirror main repo for the 127-bit challenge.
         "geofac.allow-127bit-benchmark=true",
@@ -39,6 +41,10 @@ class FactorServiceChallengeIT {
         BigInteger n = new BigInteger(FactorService.DEFAULT_N);
 
         FactorizationResult result = factorizerService.factor(n);
+
+        System.out.println("127-bit benchmark result: success=" + result.success()
+                + " p=" + result.p() + " q=" + result.q()
+                + " durationMs=" + result.durationMs());
 
         assertTrue(result.success(), "Factorization should succeed on the 127-bit benchmark");
         assertNotNull(result.p());

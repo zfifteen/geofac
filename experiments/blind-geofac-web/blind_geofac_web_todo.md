@@ -2,6 +2,7 @@ Goal
 
 - Keep the blind-geofac web app functionally aligned with the main repo’s geometric resonance engine (Dirichlet kernel +
   Sobol QMC + adaptive precision), proving factors without shortcuts.
+- Use local JDK 21 at /opt/homebrew/opt/openjdk@21 for builds/tests.
 
 Done so far
 
@@ -14,15 +15,14 @@ Done so far
 
 Remaining tasks
 
-- Run the long benchmark test (`FactorServiceChallengeIT`) end-to-end and capture logs/artifacts; tune parameters only
-  if it fails (threshold, samples, m-span, k-range).
-- Decide on gating the long challenge IT behind a flag to keep default test runs fast (e.g., system property) while
-  preserving its assertions when enabled.
-- Surface engine configuration/status in the REST API/README so operators know which parameters are in effect and how to
-  override safely.
-- Review SSE/log streaming under long runs to ensure no backpressure or memory issues; cap history or stream window if
-  needed.
-- Optional: add lightweight unit tests around PrecisionUtil.principalAngle and DirichletKernel edge cases (singularity
-  guard) to catch regressions without extending runtime.
-- Optional: consider exposing diagnostics toggle in request payload, defaulting off, to match main repo’s diagnostic
-  behavior.
+- Run the 127-bit benchmark (`FactorServiceChallengeIT`) end-to-end; success = factor found within 30 minutes. Capture
+  streaming console/SSE logs; adjust threshold/samples/m-span/k-range/timeouts as needed to hit the target.
+- Add a flag to gate the long challenge IT so default test runs stay fast, while preserving assertions when enabled.
+- Surface current engine config/status via REST and README notes so operators know active parameters and safe overrides
+  (no new CI tasks yet).
+- Review SSE/log streaming for long runs; ensure periodic, meaningful output and guard against backpressure/memory
+  buildup
+  (your call on the approach).
+- Optional: add micro-tests for PrecisionUtil.principalAngle and DirichletKernel singularity guard; add diagnostics
+  toggle
+  handling tests if runtime fits within the 30-minute budget.

@@ -32,4 +32,10 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+        events "passed", "failed", "skipped"
+    }
+    // Forward opt-in flag for long challenge IT
+    systemProperty "geofac.runLongChallengeIT", System.getProperty("geofac.runLongChallengeIT", "false")
 }
