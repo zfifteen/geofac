@@ -24,8 +24,11 @@ class MicroEdgeCaseTests {
 
     private static final BigInteger CHALLENGE_N = new BigInteger("137524771864208156028430259349934309717");
     
-    /** Upper bound for normalized Dirichlet amplitude (allows small tolerance above 1.0 for numerical precision) */
-    private static final BigDecimal NORMALIZED_AMPLITUDE_UPPER_BOUND = BigDecimal.valueOf(1.1);
+    /** 
+     * Upper bound for normalized Dirichlet amplitude. Numerical precision near singularities
+     * can cause amplitudes slightly above 1.0; 1.05 allows 5% tolerance for edge cases.
+     */
+    private static final BigDecimal NORMALIZED_AMPLITUDE_UPPER_BOUND = BigDecimal.valueOf(1.05);
     private static final BigInteger GATE4_N = new BigInteger("100001980001501"); // ~10^14
 
     @Test
@@ -167,13 +170,14 @@ class MicroEdgeCaseTests {
         // Verify snap kernel produces reasonable candidates
         
         MathContext mc = new MathContext(320);
-        BigDecimal lnN = new BigDecimal("87.7834"); // approximate ln(CHALLENGE_N)
+        // Compute ln(CHALLENGE_N) programmatically for consistency
+        BigDecimal lnN = ch.obermuhlner.math.big.BigDecimalMath.log(new BigDecimal(CHALLENGE_N), mc);
         BigDecimal theta = BigDecimal.valueOf(Math.PI / 4); // π/4
         
         BigInteger candidate = SnapKernel.phaseCorrectedSnap(lnN, theta, mc);
         
         System.out.println("Snap kernel test:");
-        System.out.println("  lnN = " + lnN);
+        System.out.println("  lnN = " + lnN.setScale(6, java.math.RoundingMode.HALF_UP));
         System.out.println("  theta = π/4");
         System.out.println("  candidate = " + candidate);
         System.out.println("  candidate bits = " + candidate.bitLength());

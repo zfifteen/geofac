@@ -22,10 +22,10 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ShellExclusionABTest {
 
-    // Gate-4 range semiprime (~10^14)
+    // Gate-4 range semiprime (~10^15)
     private static final BigInteger TEST_P = BigInteger.valueOf(10000019L);
     private static final BigInteger TEST_Q = BigInteger.valueOf(10000079L);
-    private static final BigInteger TEST_N = TEST_P.multiply(TEST_Q); // 100001980001501
+    private static final BigInteger TEST_N = TEST_P.multiply(TEST_Q); // 100001980001501 ≈ 10^14.9
 
     @EnabledIfSystemProperty(named = "geofac.runFalsificationIT", matches = "true")
     @SpringBootTest(properties = {
