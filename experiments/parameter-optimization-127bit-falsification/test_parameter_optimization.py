@@ -12,6 +12,7 @@ import sys
 import json
 import time
 import subprocess
+import math
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any, List, Tuple
 from math import log, sqrt, isqrt, floor
@@ -19,8 +20,7 @@ from math import log, sqrt, isqrt, floor
 # High-precision math
 try:
     import mpmath
-    # Precision will be set within functions that need it
-    mpmath.mp.dps = 100  # Default base precision
+    # Note: Precision is set within functions that need it (not at module level)
 except ImportError:
     print("Warning: mpmath not available, using standard math")
     mpmath = None
@@ -264,7 +264,6 @@ def sin(x: float) -> float:
     """Sine function using mpmath if available."""
     if mpmath:
         return float(mpmath.sin(x))
-    import math
     return math.sin(x)
 
 
@@ -272,7 +271,6 @@ def cos(x: float) -> float:
     """Cosine function using mpmath if available."""
     if mpmath:
         return float(mpmath.cos(x))
-    import math
     return math.cos(x)
 
 
@@ -407,7 +405,6 @@ def geometric_resonance_search(
                         # Fallback: clamp to sqrt_N neighborhood
                         # exp(ln_N/2 + theta) = sqrt_N * exp(theta)
                         if abs(theta) < 50:  # Safe range for exp
-                            import math
                             p0 = int(round(sqrt_N * math.exp(theta)))
                         else:
                             # Theta too large, skip this candidate
@@ -464,7 +461,6 @@ def exp(x: float) -> float:
     """Exponential function using mpmath if available."""
     if mpmath:
         return float(mpmath.exp(x))
-    import math
     return math.exp(x)
 
 
