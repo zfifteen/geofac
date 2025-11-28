@@ -145,13 +145,14 @@ class TriangleFilterTest {
     void bandEdgeFactors_acceptedWithoutSkewCheck() {
         // Test that band-edge factors pass when skew check is disabled (default)
         // This ensures the "true factors never rejected" invariant holds
-        TriangleFilterConfig config = new TriangleFilterConfig(true, 4.0, 0.0);
+        double balanceBand = 4.0;
+        TriangleFilterConfig config = new TriangleFilterConfig(true, balanceBand, 0.0);
         
-        // Create a candidate slightly inside the band edge (sqrtN/4 + 1)
+        // Create a candidate slightly inside the band edge (sqrtN/R + 1)
         // This avoids rounding issues from BigInteger truncation
-        BigInteger lowerBoundEdge = sqrtN.divide(BigDecimal.valueOf(4.0), MC).toBigInteger().add(BigInteger.ONE);
+        BigInteger lowerBoundEdge = sqrtN.divide(BigDecimal.valueOf(balanceBand), MC).toBigInteger().add(BigInteger.ONE);
         
-        // Should pass because it's within [sqrtN/4, sqrtN*4]
+        // Should pass because it's within [sqrtN/R, sqrtN*R]
         boolean accepted = factorizerService.triangleFilterAccepts(TEST_N, lowerBoundEdge, sqrtN, config, MC);
         
         assertTrue(accepted, "Band-edge factor should be accepted when skew check disabled");
