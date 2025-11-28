@@ -33,7 +33,7 @@ geofac:
 |-----------|---------|-------------|
 | `enabled` | `false` | Enable/disable the filter |
 | `balanceBand` | `4.0` | Balance ratio R. Candidates must satisfy √N/R ≤ p ≤ √N×R |
-| `maxLogSkew` | `2.0` | Maximum |log(p) - log(q*)| where q* = N/p |
+| `maxLogSkew` | `2.0` | Maximum abs(log(p) - log(q*)) where q* = N/p |
 
 ## Performance Implications
 

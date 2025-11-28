@@ -616,8 +616,8 @@ public class FactorizerService {
 
         // Optional: check log skew if maxLogSkew > 0
         if (config.maxLogSkew() > 0) {
-            // q* = N / p
-            BigDecimal qStar = new BigDecimal(N, mc).divide(p, mc);
+            // q* = N / p (use explicit rounding mode to avoid ArithmeticException)
+            BigDecimal qStar = new BigDecimal(N, mc).divide(p, mc.getPrecision(), mc.getRoundingMode());
             if (qStar.compareTo(BigDecimal.ONE) <= 0) {
                 return false;
             }
