@@ -31,7 +31,8 @@ class BigIntMathTest {
         BigInteger sqrt = BigInteger.valueOf(10);
         double[] phases = BigIntMath.zNormalize(n, sqrt);
         assertEquals(2, phases.length);
-        assertEquals(0.5, phases[0], 0.001);
+        // ln(100)/ln(10) = 2.0, frac(2.0) = 0.0; thetaQ = frac(0.0 + 0.5) = 0.5
+        assertEquals(0.0, phases[0], 0.001);
         assertEquals(0.5, phases[1], 0.001);
     }
 }
