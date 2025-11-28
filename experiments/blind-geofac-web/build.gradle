@@ -38,4 +38,8 @@ tasks.named('test') {
     }
     // Forward opt-in flag for long challenge IT
     systemProperty "geofac.runLongChallengeIT", System.getProperty("geofac.runLongChallengeIT", "false")
+    // Forward triangle filter benchmark settings (Spring Boot property binding via system properties)
+    if (System.getProperty("geofac.triangle-filter-enabled") != null) {
+        systemProperty "geofac.triangle-filter-enabled", System.getProperty("geofac.triangle-filter-enabled")
+    }
 }
