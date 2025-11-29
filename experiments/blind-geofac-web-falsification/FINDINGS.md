@@ -1,6 +1,6 @@
 # Falsification Experiment: blind-geofac-web 127-bit Challenge
 
-## **HYPOTHESIS NOT YET FALSIFIED - TIMEOUT REACHED**
+## **INCONCLUSIVE - PENDING FULL TEST**
 
 The geometric resonance method could not factor N within the observed probe time, but the full 30-minute falsification window was not completed due to practical time constraints. The evidence collected suggests the hypothesis is **likely false** for the specified parameters.
 
@@ -21,7 +21,7 @@ The geometric resonance method could not factor N within the observed probe time
 
 ### Key Finding
 
-**CRITICAL COVERAGE GAP DETECTED**: The ring search radius is capped at 100M but candidates are generated at distances of ~1.6×10^17 from √N. This creates an effective coverage of 0.000 (well below the 0.60 threshold), meaning the algorithm is searching an infinitesimally small portion of the candidate space around each geometric resonance peak.
+**Key Finding**: The ring search radius is capped at 100M (probe) / 200M (full test), but candidates are ~10^17 away from √N. This creates effectively zero coverage of the factor space.
 
 ---
 
@@ -62,7 +62,7 @@ Ring search coverage below threshold: 0.000 < 0.600
 **Analysis**: The dynamic radius calculation returns values around **1.7×10^17**, but the cap is 100M. This means:
 - Coverage = 100M / 1.7×10^17 ≈ 0.0000000006 (essentially zero)
 - The algorithm is only searching ±100M integers around each candidate center
-- The actual factor p=10508623501177419659 could be ~3×10^9 away from √N (≈11.7×10^18)
+- The actual factor p=10508623501177419659 is ~1.2×10^18 away from √N (≈11.7×10^18)
 
 ### 2. Precision Scaling
 

@@ -15,7 +15,7 @@ See [FINDINGS.md](FINDINGS.md) for complete analysis and metrics.
 ### Quick Probe (2 minutes)
 ```bash
 cd experiments/blind-geofac-web
-../../gradlew test --tests "*QuickFalsificationProbeTest*"
+../../gradlew test -Dgeofac.runFalsificationIT=true --tests "*QuickFalsificationProbeTest*"
 ```
 
 ### Full Falsification (30 minutes)

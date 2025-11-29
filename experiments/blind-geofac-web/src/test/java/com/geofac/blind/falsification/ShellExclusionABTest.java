@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigInteger;
 
@@ -22,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ShellExclusionABTest {
 
-    // Gate-4 range semiprime (~10^15)
+    // Gate-4 range semiprime (~10^14)
     private static final BigInteger TEST_P = BigInteger.valueOf(10000019L);
     private static final BigInteger TEST_Q = BigInteger.valueOf(10000079L);
     private static final BigInteger TEST_N = TEST_P.multiply(TEST_Q); // 100001980001501 ≈ 10^14.9

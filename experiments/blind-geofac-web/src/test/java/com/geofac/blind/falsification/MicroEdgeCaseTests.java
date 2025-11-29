@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Micro-tests for edge cases in the geometric resonance pipeline.
  * 
  * These tests verify:
- * 1. Singularity guard (k=0.0) behavior in Dirichlet kernel
+ * 1. Singularity guard (theta=0) behavior in Dirichlet kernel
  * 2. Precision/angle adaptive scaling
  * 3. Scale-adaptive parameter tuning
  */
@@ -57,7 +57,9 @@ class MicroEdgeCaseTests {
         int J = 6;
         
         // Test values near singularity - values smaller than precision epsilon will 
-        // hit the guard and return 1.0; larger values show graceful degradation
+        // hit the guard and return 1.0; larger values show graceful degradation.
+        // These values span different orders of magnitude to test the singularity guard
+        // across various precision thresholds (e.g., double precision ~1e-16, BigDecimal precision ~1e-50).
         double[] smallThetas = {1e-10, 1e-20, 1e-50};
         
         System.out.println("Near-singularity tests (J=" + J + "):");
