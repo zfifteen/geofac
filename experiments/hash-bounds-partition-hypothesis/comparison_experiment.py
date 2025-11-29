@@ -21,8 +21,8 @@ import os
 import json
 import time
 import random
-from math import log, isqrt, sqrt
-from typing import Dict, List, Optional, Tuple
+from math import isqrt, sqrt
+from typing import Dict, List
 
 # Add parent directory for imports
 sys.path.insert(0, os.path.dirname(__file__))
@@ -36,9 +36,6 @@ from hash_bounds_sampling import (
     adaptive_precision,
     SEED_PRIMES,
     CHALLENGE_127,
-    GATE_2_60BIT,
-    RANGE_MIN,
-    RANGE_MAX,
 )
 
 # Import baseline GVA for comparison

@@ -18,7 +18,7 @@ Run with: pytest test_hash_bounds.py -v
 import sys
 import os
 import pytest
-from math import log, isqrt, sqrt
+from math import isqrt, sqrt
 
 # Add experiment directory to path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -38,8 +38,6 @@ from hash_bounds_sampling import (
     SEED_PRIMES,
     CHALLENGE_127,
     GATE_2_60BIT,
-    RANGE_MIN,
-    RANGE_MAX,
 )
 
 

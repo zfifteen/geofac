@@ -19,7 +19,7 @@ import time
 from math import log, sqrt, isqrt
 
 # Configure high precision for computations
-mp.mp.dps = 100
+# Precision should be set explicitly in functions using mp.workdps()
 
 # Validation gates
 GATE_1_30BIT = 1073217479  # 32749 × 32771
@@ -118,15 +118,15 @@ def compute_boundary_centers(sqrt_N: int, frac_sqrt: mp.mpf,
         if boundary_pos > window:
             break
         
-        if boundary_pos <= window:
-            boundaries.append(boundary_pos)
-            if boundary_pos > 0:
-                boundaries.append(-boundary_pos)
+        boundaries.append(boundary_pos)
+        if boundary_pos > 0:
+            boundaries.append(-boundary_pos)
         
         k += 1
         
-        # Safety limit to prevent infinite loops
-        if len(boundaries) > 2000:
+        # Safety limit only for extreme cases (e.g. millions of boundaries)
+        # 2000 was too small and truncated the search window
+        if len(boundaries) > 2000000:
             break
     
     return sorted(set(boundaries))
@@ -349,14 +349,23 @@ def hash_bounds_factor_search(N: int,
     # Set adaptive precision
     required_dps = adaptive_precision(N)
     
+    # Always log precision for reproducibility
+    if verbose:
+        print("=" * 70)
+        print("Hash-Bounds Partition Factor Search")
+        print("=" * 70)
+        print(f"N = {N}")
+        print(f"Bit length: {N.bit_length()}")
+        print(f"Precision: {required_dps} dps")
+    else:
+        # Log precision even in non-verbose mode if this is a significant run
+        # For now, we assume non-verbose might still want minimal audit trail if logging is configured
+        # But adhering to the specific review: "always logging the precision regardless of verbose flag"
+        # We print it to stdout as a minimal log line.
+        print(f"[INFO] Hash-Bounds Search: N={N} (bits={N.bit_length()}), Precision={required_dps} dps")
+
     with mp.workdps(required_dps):
         if verbose:
-            print("=" * 70)
-            print("Hash-Bounds Partition Factor Search")
-            print("=" * 70)
-            print(f"N = {N}")
-            print(f"Bit length: {N.bit_length()}")
-            print(f"Precision: {required_dps} dps")
             print(f"k = {k_value}")
             print(f"Max candidates: {max_candidates}")
             print(f"Delta window: ±{delta_window}")
