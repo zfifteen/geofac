@@ -19,18 +19,8 @@ echo "=== Triangle Filter Smoke Test ==="
 echo "Reference: https://github.com/zfifteen/geofac/pull/171"
 echo ""
 
-# Parse triangle filter stats from log file
-parse_triangle_stats() {
-    local log_file="$1"
-    local checked rejected rate
-    
-    # Extract stats: "Triangle filter stats: checked=N, rejected=M (X.X%)"
-    checked=$(grep -oE 'checked=[0-9]+' "$log_file" 2>/dev/null | tail -1 | cut -d= -f2 || echo "0")
-    rejected=$(grep -oE 'rejected=[0-9]+' "$log_file" 2>/dev/null | tail -1 | cut -d= -f2 || echo "0")
-    rate=$(grep -oE '\([0-9.]+%\)' "$log_file" 2>/dev/null | tail -1 | tr -d '()%' || echo "N/A")
-    
-    echo "$checked $rejected $rate"
-}
+# Source utility functions
+source "$SCRIPT_DIR/benchmark_utils.sh"
 
 run_quick_test() {
     local filter_enabled="$1"
@@ -54,6 +44,11 @@ run_quick_test() {
         -Dgeofac.triangle-filter-enabled="$filter_enabled" \
         --tests "com.geofac.blind.service.FactorServiceTest" \
         2>&1 | tee "$log_file"
+    
+    if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+        echo "Error: Test command failed."
+        exit 1
+    fi
     
     local end_time
     end_time=$(date +%s)

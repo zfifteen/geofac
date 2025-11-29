@@ -16,7 +16,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WEB_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$WEB_ROOT/../.." && pwd)"
-RESULTS_DIR="$SCRIPT_DIR/results"
+RESULTS_DIR="$SCRIPT_DIR/results/$(date +%Y%m%d_%H%M%S)"
 
 NUM_RUNS="${1:-3}"
 
@@ -25,26 +25,16 @@ TEST_CLASS="${BENCHMARK_TEST_CLASS:-com.geofac.blind.service.FactorServiceChalle
 
 mkdir -p "$RESULTS_DIR"
 
+# Source utility functions
+source "$SCRIPT_DIR/benchmark_utils.sh"
+
 echo "=== Triangle Filter Benchmark ==="
 echo "Reference: https://github.com/zfifteen/geofac/pull/171"
-echo "Date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+echo "Date: $(date '+%Y-%m-%d %H:%M:%S UTC')"
 echo "Runs per configuration: $NUM_RUNS"
 echo "Test class: $TEST_CLASS"
 echo "Results directory: $RESULTS_DIR"
 echo ""
-
-# Parse triangle filter stats from log file
-# Format: "Triangle filter stats: checked=N, rejected=M (X.X%)"
-parse_triangle_stats() {
-    local log_file="$1"
-    local checked rejected rate
-    
-    checked=$(grep -oE 'checked=[0-9]+' "$log_file" 2>/dev/null | tail -1 | cut -d= -f2 || echo "0")
-    rejected=$(grep -oE 'rejected=[0-9]+' "$log_file" 2>/dev/null | tail -1 | cut -d= -f2 || echo "0")
-    rate=$(grep -oE '\([0-9.]+%\)' "$log_file" 2>/dev/null | tail -1 | tr -d '()%' || echo "N/A")
-    
-    echo "$checked $rejected $rate"
-}
 
 # Function to run a single benchmark
 run_benchmark() {
@@ -88,7 +78,9 @@ run_benchmark() {
     
     # Check for success
     local success="false"
-    if grep -q "Factorization should succeed" "$log_file" && grep -q "BUILD SUCCESSFUL" "$log_file"; then
+    if grep -q "127-bit benchmark result: success=true" "$log_file"; then
+        success="true"
+    elif grep -q "Factorization should succeed" "$log_file" && grep -q "BUILD SUCCESSFUL" "$log_file"; then
         success="true"
     fi
     
@@ -109,13 +101,13 @@ echo "mode,run,wall_clock_s,duration_ms,success,checked,rejected,reject_rate_pct
 echo ""
 echo "--- Baseline (Filter Disabled) ---"
 for i in $(seq 1 "$NUM_RUNS"); do
-    run_benchmark "false" "$i"
+    run_benchmark "false" "$i" || break
 done
 
 echo ""
 echo "--- Test (Filter Enabled) ---"
 for i in $(seq 1 "$NUM_RUNS"); do
-    run_benchmark "true" "$i"
+    run_benchmark "true" "$i" || break
 done
 
 echo ""
