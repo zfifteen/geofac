@@ -4,17 +4,17 @@ This directory contains research experiments for the geofac geometric resonance 
 
 ## Current Experiments
 
-### [parameter-optimization-127bit-falsification/](parameter-optimization-127bit-falsification/)
+### [hash-bounds-falsification/](hash-bounds-falsification/)
 
 **Status**: Complete - Hypothesis decisively falsified
 
-**Objective**: Test whether specific parameter optimizations (samples=50000, threshold=0.15, k-range=[0.1, 0.9], m-span=200) improve 127-bit factorization over current scale-adaptive defaults.
+**Objective**: Falsify the hypothesis that hash-bounds derived from Z5D fractional part predictions {√(m·ln(m))} can predict bounds for factor location in semiprime N = p × q.
 
-**Key Finding**: Hypothesis decisively falsified. Lower threshold (0.15) generates 4.3× more false positives (24.5% vs 9.1% pass rate) without finding factors. Neither configuration successfully factored the 127-bit challenge within the reduced budget. Wider k-range dilutes search effectiveness.
+**Key Finding**: Hypothesis decisively falsified with 0% coverage (0/6 factors captured) across all three validation gates. This is significantly below both the claimed 51.5% coverage and the random baseline of 15.5%. The Z5D prediction systematically misses actual factor positions by large margins (average error 0.457 vs claimed ~0.237).
 
-**Critical Insight**: The scale-adaptive parameter tuning (from ScaleAdaptiveParams.java) is more effective than fixed parameters. Lower thresholds capture noise, not signal. Threshold should remain ≥0.5 to avoid false positive flood.
+**Critical Insight**: The Z5D prediction formula {√(m·ln(m))} where m ≈ p/ln(p) bears no meaningful mathematical relationship to actual {√p}. For CHALLENGE_127, the prediction is ~0.879 while actual is ~0.228—a complete miss. The claimed calibration metrics cannot be reproduced.
 
-**Start here**: [parameter-optimization-127bit-falsification/EXECUTIVE_SUMMARY.md](parameter-optimization-127bit-falsification/EXECUTIVE_SUMMARY.md)
+**Start here**: [hash-bounds-falsification/INDEX.md](hash-bounds-falsification/INDEX.md)
 
 ---
 
